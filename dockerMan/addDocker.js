@@ -41,6 +41,7 @@ function hideBrowser() {
 	$("#fileTree").css({
 		'display': "none"
 	});
+	brOpen = false;
 }
 
 function addPort(frm) {

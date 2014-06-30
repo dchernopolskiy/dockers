@@ -48,7 +48,7 @@ margin: 10px;
 font-size: 14px;
 }
 .fileTree {
-width: 240px;
+width: 230px;
 height: 300px;
 border-top: solid 1px #BBB;
 border-left: solid 1px #BBB;
@@ -90,7 +90,7 @@ vertical-align: bottom;
 </script>
 <script src="/plugins/vendor/jsFileTree/jqueryFileTree.js" type="text/javascript"></script>
 <link href="/plugins/vendor/jsFileTree/jqueryFileTree.css" rel="stylesheet" type="text/css" media="screen">
-<script type="text/javascript" src="/plugins/dockerMan/addTree.js"> </script>
+<script type="text/javascript" src="/plugins/dockerMan/addDocker.js"> </script>
 
 <div id="canvas" class="canvas" style="z-index:1;">
 <form method="post">
@@ -163,7 +163,7 @@ None
 <div id="fileTree" class="fileTree"></div>
 </td>
 
-<td><input type="text" name="add_containerPath" class="textPath"> <input onclick="addPath(this.form);" type="button" value="Add Path"></td>
+<td><input type="text" name="add_containerPath" class="textPath" onfocus="hideBrowser();"> <input onclick="addPath(this.form);" type="button" value="Add Path"></td>
 </tr>
 </tbody>
 </table>
