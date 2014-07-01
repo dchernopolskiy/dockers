@@ -1,6 +1,8 @@
 
 var pathNum = 0;
 var portNum = 0;
+var envNum = 0;
+var currentPath = "/mnt/";
 brOpen = false;
 $(document).ready(function() {
 	$("#filePath").click(function() {
@@ -25,7 +27,7 @@ function showBrowser() {
 		'display': "block"
 	});
 	$('#fileTree').fileTree({
-		root: '/mnt/',
+		root: currentPath,
 		script: '/plugins/vendor/jsFileTree/jqueryFileTree.php',
 		folderEvent: 'click',
 		expandSpeed: 750,
@@ -33,6 +35,7 @@ function showBrowser() {
 		multiFolder: false
 	}, function(file) {
 		document.getElementById("filePath").value = file;
+		currentPath = file;
 		brOpen = true;
 	});
 }
@@ -41,6 +44,7 @@ function hideBrowser() {
 	$("#fileTree").css({
 		'display': "none"
 	});
+	$("#fileTree").html("");
 	brOpen = false;
 }
 
@@ -66,4 +70,16 @@ function addPath(frm) {
 
 function removePath(rnum) {
 	jQuery('#pathNum' + rnum).remove();
+}
+
+function addEnv(frm) {
+	envNum++;
+var row ='<tr id="envNum'+envNum+'"><td><input type="text" name="envName[]" value="'+frm.add_envName.value+'" class="textEnv"></td> <td><input type="text" name="envValue[]" value="'+ frm.add_envValue.value+'" class="textEnv"><input type="button" value="Remove" onclick="removeEnv(' + envNum + ');"></td></td>';
+	jQuery('#envRows tbody').append(row);
+	frm.add_envName.value = '';
+	frm.add_envValue.value = '';
+}
+
+function removeEnv(rnum) {
+	jQuery('#envNum' + rnum).remove();
 }

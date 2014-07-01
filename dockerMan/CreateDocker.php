@@ -10,6 +10,11 @@ if ($_POST){
     $name = $_POST["containerName"];
     $bindTime = $_POST["bindTime"];
     
+    $envs = "";
+    for ($i = 0; $i < count($_POST["envName"]); $i++){
+        $envs .= "-e ".$_POST["envName"][$i]."='".$_POST["envValue"][$i]."' "; 
+    }
+
     $ports = "";
     for ($i = 0; $i < count($_POST["hostPort"]); $i++){
         $ports .= "-p ".$_POST["hostPort"][$i].":".$_POST["containerPort"][$i]." "; 
@@ -19,7 +24,7 @@ if ($_POST){
     	prepare_dir($_POST["hostPath"][$i]);
         $volumes .= "-v ".$_POST["hostPath"][$i].":".$_POST["containerPath"][$i]." "; 
     }
-    $cmd = "/usr/bin/docker run -d --name='".$name."' ";
+    $cmd = "/usr/bin/docker run -d --name='".$name."' ".$envs." ";
     if ($priviledged == "on"){
         $cmd .= "--privileged ";}
     
@@ -35,6 +40,7 @@ if ($_POST){
 	    $cmd .= "-v /etc/localtime:/etc/localtime:ro ";
     }
     $cmd .= $volumes . $repository;
+    
     $_GET['cmd'] = $cmd;
     include("/usr/local/emhttp/plugins/dockerMan/execWithLog.php");
 } else {
@@ -68,6 +74,9 @@ height: 100%;
 }
 input.textPath{
 width: 240px;
+}
+input.textEnv{
+width: 230px;
 }
 input.textPort{
 width: 100px;
@@ -188,6 +197,31 @@ None
 </tbody>
 </table>
 </div>
+
+<div id="title">
+<span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Environment Variables</span>
+</div>
+
+<table id="envRows" class="pathTab">
+<thead>
+<tr>
+<td>Variable Name:</td>
+
+<td>Variable Value:</td>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>
+<input type="text" name="add_envName" class="textEnv">
+</td>
+
+<td><input type="text" name="add_envValue" class="textEnv"> <input onclick="addEnv(this.form);" type="button" value="Add Variable"></td>
+</tr>
+</tbody>
+</table>
+
 
 <div style="text-align:right;"><input type="submit" value="Add" style="font-weight: bold; font-size: 16px;"></div>
 </form>
