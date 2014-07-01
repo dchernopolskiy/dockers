@@ -2,6 +2,8 @@ Icon="dockerMan.png"
 Menu="ExtensionMenu"
 Title="Docker"
 ---
+<link type="text/css" rel="stylesheet" href="/plugins/webGui/style/default_tablesorter.css">
+<script type="text/javascript" src="/plugins/vendor/tablesorter/jquery.tablesorter.min.js"></script>
 <?php
 function pgrep($process_name) {
 	$pid = exec("pgrep $process_name", $output, $retval);
@@ -51,78 +53,9 @@ if ($_POST){
 
 } else {
 
-//Calculate the date interval
-function dateInterval($d){
-	$date1 = new DateTime($d, new DateTimeZone('UTC'));
-	$date2 = new DateTime();
-	$interval = $date1->diff($date2);
-	$d  = $interval->y ? $interval->y." year(s), " : "";
-	$d .= $interval->d ? $interval->d." day(s), " : "";
-	$d .= $interval->h ? $interval->h." hour(s), " : "";
-	$d .= $interval->i ? $interval->i." minute(s), " : "";
-	$d .= $interval->s ? $interval->s." second(s)" : "";
-	return $d;
-}
-
-//Get container info from JSON output
-function get_containers(){
-	$containers = array();
-	exec("docker ps -a -q", $containersID, $retr_val);
-
-	foreach($containersID as $id){
-		$c = array();
-		$output = shell_exec("docker inspect {$id}");
-		$obj = json_decode($output)[0];
-
-		$c["Hostname"]  = $obj->Config->Hostname;
-		$c["Image"]     = $obj->Config->Image;
-		$c["Name"]      = substr($obj->Name, 1);
-		$c["Running"]   = $obj->State->Running;
-		$c["Cmd"]       = implode(" ",$obj->Config->Cmd);
-
-		// Format uptime
-		$StartedAt = substr($obj->State->StartedAt, 0, 19);
-		$Created = substr($obj->Created, 0, 19);
-		$c["Uptime"]  = dateInterval($StartedAt);
-		$c["Created"] = dateInterval($Created);
-
-		$ports = array();
-		foreach($obj->HostConfig->PortBindings as $key => $value){
-			$ports[] = $value[0]->HostIp.":".$value[0]->HostPort." -> ".$key;
-		};
-		$c["Ports"] = $ports;
-
-		$containers[] = $c;
-	}
-	return $containers;
-}
-
-//Get params from CLI output
-function get_params($cmd){
-	$containers = array();
-	$values = array();
-	exec($cmd, $output, $retval);
-	preg_match_all("/(\S+\s?\S+[\s]{0,100})/", $output[0], $matches);
-	foreach($matches[1] as $v){
-		$values[] = array( "name" => trim($v), "length" => strlen($v));
-	}
-	unset($output[0]);
-	foreach( $output as $v){
-		$stpos = 0;
-		$content = array();
-		for($i = 0; $i < count($values); ++$i){
-			$str_length = $values[$i]['length'];
-			$content[$values[$i]["name"]] = trim(substr($v, $stpos, $str_length));
-			$stpos += $str_length;
-		}
-		end($content);
-		$key = key($content);
-		reset($content);
-		$content[$key] .= substr($v, $stpos, strlen($v));
-		$containers[] = $content;
-	}
-	return $containers;
-}
+// Add the Docker JSON client
+include("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
+$docker = new DockerClient();
 
 function is_autostart($ct_name, $string){
 	foreach( explode(',', $string) as $x) {
@@ -195,14 +128,9 @@ Docker Install Location:
 
 <?PHP } ?>
 
-<? if (pgrep('docker')) { 
+<? if (pgrep('docker')) { ?>
 
-
-?>
 <br>
-<link type="text/css" rel="stylesheet" href="/plugins/webGui/style/default_tablesorter.css">
-<script type="text/javascript" src="/plugins/vendor/tablesorter/jquery.tablesorter.min.js"></script>
-
 <style>
   a.log{cursor:zoom-in;}
   a.exec{cursor:pointer;}
@@ -269,7 +197,7 @@ function addDocker() {
     <tr><th>CONTROL</th><th>NAME</th><th>IMAGE</th><th>COMMAND</th><th>CREATED</th><th>STATUS</th><th>PORTS</th><th>CONTAINER ID</th><th>AUTOSTART</th><th>REMOVE</th></tr>
   </thead>
   <tbody>
-    <? $all_containers = get_containers();
+    <? $all_containers = $docker->getDockerContainers();
        foreach($all_containers as $ct){ ?>
     <tr>
       <td><?
@@ -281,7 +209,7 @@ function addDocker() {
       <td><?=$ct['Image'];?></td>
       <td><?=$ct['Cmd'];?></td>
       <td><?=$ct['Created'];?></td>
-      <td><a class="log" onclick="execWithLog('/usr/bin/docker logs <?=$ct['Name'];?>','Log for <?=$ct['Name'];?>', false, false)"><?=$ct['Uptime'];?></a></td>
+      <td><a class="log" onclick="execWithLog('/usr/bin/docker logs <?=$ct['Name'];?>','Log for <?=$ct['Name'];?>', false, false)"><?=$ct['Status'];?></a></td>
       <td><?=implode("<br>", $ct['Ports']);?></td>
       <td><?=$ct['Hostname'];?></td>
       <? $checked = is_autostart($ct['Name'], $dockercfg['DOCKER_CONTAINERS']) ? "checked" : ""; ?>
@@ -296,19 +224,17 @@ function addDocker() {
 <div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Images</span></div>
 <table class="tablesorter" id="docker_images">
   <thead>
-    <tr><th>REPOSITORY</th><th>TAG</th><th>IMAGE ID</th><th>CREATED</th><th>VIRTUAL SIZE</th><th>REMOVE</th></tr>
+    <tr><th>TAG</th><th>IMAGE ID</th><th>CREATED</th><th>VIRTUAL SIZE</th><th>REMOVE</th></tr>
   </thead>
   <tbody>
-    <? $all_images = get_params("docker images");
-       foreach($all_images as $image){ 
-       $rmi = (preg_match ("/<none>/", $image['REPOSITORY'])) ? $image['IMAGE ID']: $image['REPOSITORY']; ?>
+    <? $all_images = $docker->getDockerImages();
+       foreach($all_images as $image){ ?>
     <tr>
-      <td><?=htmlentities($image['REPOSITORY']);?></td>
-      <td><?=htmlentities($image['TAG']);?></td>
-      <td><?=htmlentities($image['IMAGE ID']);?></td>
-      <td><?=htmlentities($image['CREATED']);?></td>
-      <td><?=htmlentities($image['VIRTUAL SIZE']);?></td>
-      <td><a class="exec" onclick="execWithLog('/usr/bin/docker rmi -f <?=htmlentities($rmi);?>','Removing image: <?=htmlentities($rmi);?>', true, true )">Remove</a></td>
+      <td><?=implode("<br>",$image['Tags']);?></td>
+      <td><?=htmlentities($image['Id']);?></td>
+      <td><?=htmlentities($image['Created']);?></td>
+      <td><?=htmlentities($image['VirtualSize']);?></td>
+      <td><a class="exec" onclick="execWithLog('/usr/bin/docker rmi -f <?=htmlentities($image['Id']);?>','Removing image: <?=htmlentities($image['Id']);?>', true, true )">Remove</a></td>
     </tr>
     <?};?>
   </tbody>
