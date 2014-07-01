@@ -35,7 +35,6 @@ function showBrowser() {
 		multiFolder: false
 	}, function(file) {
 		document.getElementById("filePath").value = file;
-		currentPath = file;
 		brOpen = true;
 	});
 }
