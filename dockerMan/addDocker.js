@@ -1,7 +1,7 @@
 
 var pathNum = 0;
 var portNum = 0;
-var envNum = 0;
+var varNum = 0;
 var currentPath = "/mnt/";
 brOpen = false;
 $(document).ready(function() {
@@ -12,13 +12,22 @@ $(document).ready(function() {
 			showBrowser();brOpen = true;
 		}
 	});
-	$("#networkType").change(function() {
+	if ($("#NetworkType").val() != 'bridge') {
+		$("#titlePort").css({'display': "none"})};
+
+	$("#NetworkType").change(function() {
 		if ($(this).val() != "bridge" ){
 			$("#titlePort").css({'display': "none"});
 		}else{
 			$("#titlePort").css({'display': "block"});
 			
 		}
+	});
+	$("#TemplateSelect").change(function() {
+		if ($(this).val() != "" ){
+		document.getElementById("#xmlTemplate").value = $(this).val();
+		document.forms["formTemplate"].submit();
+	}
 	});
 })
 
@@ -72,13 +81,13 @@ function removePath(rnum) {
 }
 
 function addEnv(frm) {
-	envNum++;
-var row ='<tr id="envNum'+envNum+'"><td><input type="text" name="envName[]" value="'+frm.add_envName.value+'" class="textEnv"></td> <td><input type="text" name="envValue[]" value="'+ frm.add_envValue.value+'" class="textEnv"><input type="button" value="Remove" onclick="removeEnv(' + envNum + ');"></td></td>';
+	varNum++;
+var row ='<tr id="varNum'+varNum+'"><td><input type="text" name="VariableName[]" value="'+frm.add_VariableName.value+'" class="textEnv"></td> <td><input type="text" name="VariableValue[]" value="'+ frm.add_VariableValue.value+'" class="textEnv"><input type="button" value="Remove" onclick="removeEnv(' + varNum + ');"></td></td>';
 	jQuery('#envRows tbody').append(row);
-	frm.add_envName.value = '';
-	frm.add_envValue.value = '';
+	frm.add_VariableName.value = '';
+	frm.add_VariableValue.value = '';
 }
 
 function removeEnv(rnum) {
-	jQuery('#envNum' + rnum).remove();
+	jQuery('#varNum' + rnum).remove();
 }
