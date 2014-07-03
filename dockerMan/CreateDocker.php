@@ -52,7 +52,7 @@ function xmlToVariables($xmlfile){
 
     $Volumes = array('');
     foreach($xml->Data->Volume as $v){
-        if ($v->HostDir == ""){continue;}
+        if ($v->HostDir == "" && $v->ContainerDir == ""){continue;}
         $op = (strtolower($v->Mode) == 'ro') ? 'ro' : 'rw'; 
         $Volumes[] = '"'.$v->HostDir.'":"'.$v->ContainerDir.'":'.$op;
     }
