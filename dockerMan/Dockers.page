@@ -141,9 +141,9 @@ Docker Install Location:
 <script type="text/javascript" charset="utf-8">
 
 function rmContainer(container, image){
-	$.prompt("Removing container: ", {
-		title: "Are you sure?",
-		buttons: { "Container and Image": "ct_im","Just the container" : "ct", "Cancel" : false },
+	$.prompt("Are you sure?", {
+		title: "Removing container: " + container,
+		buttons: { "Just the container" : "ct", "Container and Image": "ct_im", "Cancel" : false },
 		position: { width: 430,},
 		submit: function(e,v,m,f){
 		// use e.preventDefault() to prevent closing when needed or return false. 
@@ -212,8 +212,6 @@ function addDocker() {
 <form method="POST" id="formStartStop" action="/plugins/webGui/exec.php" target="progressFrame">
 <input type="hidden" id="#cmdStartStop" name="command" value="" />
 </form>
-
-<button onclick="teste('container', 'image');" />teste</button>
 
 <div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Containers</span><div style="text-align:right;"><a class="exec" onclick="addDocker();"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a> </div></div>
 <table class="tablesorter" id="docker_containers">
