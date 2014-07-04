@@ -111,7 +111,7 @@ function postToXML($post, $setOwnership = FALSE){
 	$Publish = $docNetworking->appendChild($doc->createElement('Publish'));
     for ($i = 0; $i < count($post["hostPort"]); $i++){
     	$protocol = (strpos($post["containerPort"][$i], '/udp')) ? 'udp' : 'tcp';
-    	$post["containerPort"][$i] = preg_replace('/\/[tcup]*/', '', $post["containerPort"][$i]);
+    	$post["containerPort"][$i] = preg_replace('/\/tcp|\/udp/', '', $post["containerPort"][$i]);
     	$post["HostPort"][$i] = preg_replace('/\/[tcup]*/', '', $post["HostPort"][$i]);
 
     	$Port = $Publish->appendChild($doc->createElement('Port'));

@@ -1,4 +1,5 @@
 <?php
+
 class DockerClient {
 
 	private function humanTiming ($time){
@@ -45,9 +46,13 @@ class DockerClient {
 			$data .= fgets($fp, 5000);
 		}
 		fclose($fp);
-		$a = substr($data, strpos($data, "["));
-		$a = $this->unchunk($a);
-		return json_decode($a);
+		$data = $this->unchunk($data);
+		preg_match_all('/[^\{]*(\{.*\})/',$data, $matches);
+		$json = array();
+		foreach($matches[1] as $x){
+			$json[] = json_decode( $x, true );
+		}
+		return $json;
 	}
 
 	public function getDockerContainers(){
@@ -58,32 +63,33 @@ class DockerClient {
 			$c = array();
 
 			$ports = array();
-			foreach($obj->Ports as $p){
-				$port = $p->IP ? $p->IP.":" : "";
-				$port .= $p->PublicPort ? $p->PublicPort."->" : "";
-				$port .= $p->PrivatePort;
-				$port .= $p->Type ? "/".$p->Type : "";
+			foreach($obj['Ports'] as $p){
+				$port = $p['IP'] ? $p['IP'].":" : "";
+				$port .= $p['PublicPort'] ? $p['PublicPort']."->" : "";
+				$port .= $p['PrivatePort'];
+				$port .= $p['Type'] ? "/".$p['Type'] : "";
 				$ports[] = $port;
 			}
-			$status = $obj->Status ? $obj->Status : "None";
+			$status = $obj['Status'] ? $obj['Status'] : "None";
 			preg_match("/\b^Up\b/", $status, $matches);
 			$running = $matches ? TRUE : FALSE;
 
-			$c["Image"]     = $obj->Image;
-			$c["Name"]      = substr($obj->Names[0], 1);
+			$c["Image"]     = $obj['Image'];
+			$c["Name"]      = substr($obj['Names'][0], 1);
 			$c["Status"]    = $status;
 			$c["Running"]   = $running;
-			$c["Cmd"]       = $obj->Command;
-			$c["Id"]        = substr($obj->Id,0,12);
-			$c["Created"]   = $this->humanTiming($obj->Created);
+			$c["Cmd"]       = $obj['Command'];
+			$c["Id"]        = substr($obj['Id'],0,12);
+			$c["Created"]   = $this->humanTiming($obj['Created']);
 			$c["Ports"]     = $ports;
-
+			
 			$containers[]   = $c;
 		}
 		return $containers;
 	}
 
 	public function getDockerImages(){
+
 		$images = array();
 		$c = array();
 		$json = $this->getDockerJSON("/images/json?all=0");
@@ -91,20 +97,29 @@ class DockerClient {
 		foreach($json as $obj){
 			$c = array();
 			$tags = array();
-			foreach($obj->RepoTags as $t){
+			foreach($obj['RepoTags'] as $t){
 				$tags[] = $t;
 			}
 			
-			$c["Created"]      = $this->humanTiming($obj->Created);//date('Y-m-d H:i:s', $obj->Created);
-			$c["Id"]           = substr($obj->Id,0,12);
-			$c["ParentId"]     = substr($obj->ParentId,0,12);
-			$c["Size"]         = $this->formatBytes($obj->Size);
-			$c["VirtualSize"]  = $this->formatBytes($obj->VirtualSize);
+			$c["Created"]      = $this->humanTiming($obj['Created']);//date('Y-m-d H:i:s', $obj['Created']);
+			$c["Id"]           = substr($obj['Id'],0,12);
+			$c["ParentId"]     = substr($obj['ParentId'],0,12);
+			$c["Size"]         = $this->formatBytes($obj['Size']);
+			$c["VirtualSize"]  = $this->formatBytes($obj['VirtualSize']);
 			$c["Tags"]         = $tags;
 
 			$images[]          = $c;
 		}
 		return $images;
+	}
+	
+	public function teste(){
+		$images = array();
+		$c = array();
+		$name = "dabfc8a44cb5";
+		$json = $this->getDockerJSON('/images/'.$name.'/json');
+		print_r($json);
+
 	}
 }
 ?>
