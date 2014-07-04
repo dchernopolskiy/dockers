@@ -134,6 +134,7 @@ function postToXML($post, $setOwnership = FALSE){
 
     $Data = $root->appendChild($doc->createElement('Data'));
     for ($i = 0; $i < count($post["hostPath"]); $i++){
+    	if (! strlen($post["containerPath"][$i])){continue; }
     	$tmpMode = (strpos($post["containerPath"][$i], ':ro')) ? 'ro' : 'rw';
     	$post["containerPath"][$i] = preg_replace('/:[row]+$/', '', $post["containerPath"][$i]);
     	if ($setOwnership){
@@ -171,8 +172,8 @@ if ($_POST){
 		   implode(' -p ', $postArray['Ports']), implode(' -v ', $postArray['Volumes']), $postArray['Repository']);
 	$cmd = preg_replace('/\s+/', ' ', $cmd);
     $_GET['cmd'] = $cmd;
-    // echo $cmd;
-    include("/usr/local/emhttp/plugins/dockerMan/execWithLog.php");
+    echo $cmd;
+/*     include("/usr/local/emhttp/plugins/dockerMan/execWithLog.php"); */
 
 } else {
 	if($_GET['xmlTemplate']){
@@ -199,13 +200,18 @@ if ($_POST){
 			}
 
 			$Volumes = $fileVariables['Volumes'];
-			$row = "<tr id=\"pathNum%s\"><td><input type=\"text\" name=\"hostPath[]\" value=\"%s\" class=\"textPath\"/></td><td><input type=\"text\" name=\"containerPath[]\" value=\"%s\" class=\"textPath\"> <input type=\"button\" value=\"Remove\" onclick=\"removePath(%s);\"></td></tr>\n";
+			 
+			$row = '<tr id="pathNum%s"><td><input type="text" id="hostPath%s" name="hostPath[]" value="%s" class="textPath"  onclick="toggleBrowser(%s);"/>
+				<br><div id="fileTree%s" class="fileTree"></div></td><td><input type="text" name="containerPath[]" value="%s" class="textPath"
+				onclick="hideBrowser(%s);"><input type="button" value="Remove" onclick="removePath(%s);"></td></tr>';
+			 
+/* 			$row = "<tr id=\"pathNum%s\"><td><input type=\"text\" name=\"hostPath[]\" value=\"%s\" class=\"textPath\"/></td><td><input type=\"text\" name=\"containerPath[]\" value=\"%s\" class=\"textPath\"> <input type=\"button\" value=\"Remove\" onclick=\"removePath(%s);\"></td></tr>\n"; */
 			$templateVolumes = '';
 			for ($i=0; $i < count($Volumes); $i++) { 
 				if(strlen($Volumes[$i])){
 					$j = $i + 100;
 					list($HostDir, $ContainerDir) = split(':', preg_replace('/[\"]/', '', $Volumes[$i]), 2);
-					$templateVolumes .= sprintf($row, $j, $HostDir, $ContainerDir, $j);
+					$templateVolumes .= sprintf($row, $j,$j, $HostDir, $j,$j,$ContainerDir, $j,$j);
 				}
 			}
 
@@ -351,12 +357,12 @@ if ($_POST){
 			<tbody>
 				<tr>
 					<td id="fBrowser">
-						<input type="text" id="filePath" name="add_hostPath" class="textPath" autocomplete="off"><br>
+						<input type="text" id="hostPath1" name="hostPath[]" class="textPath" autocomplete="off" onclick="toggleBrowser(1);"><br>
 
-						<div id="fileTree" class="fileTree"></div>
+						<div id="fileTree1" class="fileTree"></div>
 					</td>
 
-					<td><input type="text" name="add_containerPath" class="textPath" onfocus="hideBrowser();"> <input onclick="addPath(this.form);" type="button" value="Add Path" class="btn"></td>
+					<td><input type="text" id="containerPath1" name="containerPath[]" class="textPath" onfocus="hideBrowser(1);"> <input onclick="addPath(this.form);" type="button" value="Add Path" class="btn"></td>
 				</tr>
 				<?if(isset($templateVolumes)){echo $templateVolumes;}?> 
 			</tbody>

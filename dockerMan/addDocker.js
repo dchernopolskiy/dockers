@@ -1,20 +1,34 @@
 
-var pathNum = 0;
+var pathNum = 2;
 var portNum = 0;
 var varNum = 0;
 var currentPath = "/mnt/";
-brOpen = false;
-$(document).ready(function() {
-	$("#filePath").click(function() {
-		if (brOpen){
-			hideBrowser();brOpen = false;
-		}else{
-			showBrowser();brOpen = true;
-		}
-	});
-	if ($("#NetworkType").val() != 'bridge') {
-		$("#titlePort").css({'display': "none"})};
+var brOpen = [];
 
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+}
+
+
+$(document).ready(function() {
+	// $("#filePath").click(function() {
+	// 	if (brOpen){
+	// 		hideBrowser();brOpen = false;
+	// 	}else{
+	// 		showBrowser();brOpen = true;
+	// 	}
+	// });
+	if ($("#NetworkType").val() != 'bridge') {
+		$("#titlePort").css({'display': "none"});
+	};
 	$("#NetworkType").change(function() {
 		if ($(this).val() != "bridge" ){
 			$("#titlePort").css({'display': "none"});
@@ -29,31 +43,42 @@ $(document).ready(function() {
 		document.forms["formTemplate"].submit();
 	}
 	});
-})
+});
 
-function showBrowser() {
-	$("#fileTree").css({
-		'display': "block"
-	});
-	$('#fileTree').fileTree({
-		root: currentPath,
-		script: '/plugins/vendor/jsFileTree/jqueryFileTree.php',
-		folderEvent: 'click',
-		expandSpeed: 750,
-		collapseSpeed: 750,
-		multiFolder: false
-	}, function(file) {
-		document.getElementById("filePath").value = file;
-		brOpen = true;
-	});
+function toggleBrowser(N) {
+	if(typeof brOpen[N] == 'undefined') {
+		brOpen[N] = false;
+	}
+	if (brOpen[N] == false) {
+		brOpen[N] = true;
+		$("#fileTree" + N).css({
+			'display': "block"
+		});
+		$('#fileTree' + N).fileTree({
+			root: currentPath,
+			script: '/plugins/vendor/jsFileTree/jqueryFileTree.php',
+			folderEvent: 'click',
+			expandSpeed: 750,
+			collapseSpeed: 750,
+			multiFolder: false,
+		}, function(file) {
+			document.getElementById("hostPath" + N).value = file;
+		});
+	}else{
+		$("#fileTree" + N).css({
+			'display': "none"
+		});
+		$("#fileTree" + N).html("");
+		brOpen[N] = false;
+	}
 }
 
-function hideBrowser() {
-	$("#fileTree").css({
+function hideBrowser(N) {
+	$("#fileTree" + N).css({
 		'display': "none"
 	});
-	$("#fileTree").html("");
-	brOpen = false;
+	$("#fileTree" + N).html("");
+	brOpen[N] = false;
 }
 
 function addPort(frm) {
@@ -70,10 +95,14 @@ function removePort(rnum) {
 
 function addPath(frm) {
 	pathNum++;
-	var row = '<tr id="pathNum' + pathNum + '"><td><input type="text" name="hostPath[]" value="' + frm.add_hostPath.value + '" class="textPath"/></td><td><input type="text" name="containerPath[]" value="' + frm.add_containerPath.value + '" class="textPath"> <input type="button" value="Remove" onclick="removePath(' + pathNum + ');"></td></tr>';
-	$('#pathRows tbody').append(row);
-	frm.add_hostPath.value = '';
-	frm.add_containerPath.value = '';
+	var hostPath = $("#hostPath1");
+	var containerPath = $("#containerPath1");
+	var row = '<tr id="pathNum{0}"><td><input type="text" id="hostPath{0}" name="hostPath[]" value="{1}" class="textPath"  onclick="toggleBrowser({0});"/>'+
+				'<br><div id="fileTree{0}" class="fileTree"></div></td><td><input type="text" name="containerPath[]" value="{2}" class="textPath" '+
+				'onclick="hideBrowser({0});"><input type="button" value="Remove" onclick="removePath({0});"></td></tr>';
+	$('#pathRows tbody').append(row.format(pathNum, hostPath.val(), containerPath.val()));
+	hostPath.val('');
+	containerPath.val('');
 }
 
 function removePath(rnum) {
