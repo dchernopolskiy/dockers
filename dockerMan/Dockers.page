@@ -233,7 +233,7 @@ function addDocker() {
       <td><?=$ct['Created'];?></td>
       <td><a class="log" onclick="execWithLog('/usr/bin/docker logs <?=$ct['Name'];?>','Log for <?=$ct['Name'];?>', false, false)"><?=$ct['Status'];?></a></td>
       <td><?=implode("<br>", $ct['Ports']);?></td>
-      <td><?=$ct['Hostname'];?></td>
+      <td><?=$ct['Id'];?></td>
       <? $checked = is_autostart($ct['Name'], $dockercfg['DOCKER_CONTAINERS']) ? "checked" : ""; ?>
       <td><input type="checkbox"  onclick="autoStart('<?=$ct['Name'];?>'); return true;" <?=$checked;?>></td>
       <td><a class="exec" onclick="rmContainer('<?=$ct["Name"];?>','<?=$ct["Image"];?>');">Remove</a></td>
