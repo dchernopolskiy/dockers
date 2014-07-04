@@ -4,6 +4,8 @@ Title="Docker"
 ---
 <link type="text/css" rel="stylesheet" href="/plugins/webGui/style/default_tablesorter.css">
 <script type="text/javascript" src="/plugins/vendor/tablesorter/jquery.tablesorter.min.js"></script>
+<link type="text/css" rel="stylesheet" href="/plugins/vendor/imprompu/jquery-impromptu.min.css">
+<script type="text/javascript" src="/plugins/vendor/imprompu/jquery-impromptu.min.js"></script>
 <?php
 function pgrep($process_name) {
 	$pid = exec("pgrep $process_name", $output, $retval);
@@ -137,6 +139,26 @@ Docker Install Location:
 </style>
 
 <script type="text/javascript" charset="utf-8">
+
+function rmContainer(container, image){
+	$.prompt("Removing container: ", {
+		title: "Are you sure?",
+		buttons: { "Container and Image": "ct_im","Just the container" : "ct", "Cancel" : false },
+		position: { width: 430,},
+		submit: function(e,v,m,f){
+		// use e.preventDefault() to prevent closing when needed or return false. 
+		//e.preventDefault(); 
+		$.prompt.close();
+		if (v == "ct_im"){
+			var cmd = '/usr/bin/docker rm -f ' + container + '; docker rmi ' + image;
+			execWithLog(cmd ,'Removing container: ' + container, false, true);
+		} else if (v == "ct"){
+			var cmd = '/usr/bin/docker rm -f ' + container;
+			execWithLog(cmd ,'Removing container: ' + container, false, true);
+		}
+	}
+});}
+
 $(document).ready(function() {
   $("#docker_containers").tablesorter( {sortList: [[1,0]]} );
   $('#docker_containers tr:even').addClass('odd');
@@ -191,6 +213,8 @@ function addDocker() {
 <input type="hidden" id="#cmdStartStop" name="command" value="" />
 </form>
 
+<button onclick="teste('container', 'image');" />teste</button>
+
 <div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Containers</span><div style="text-align:right;"><a class="exec" onclick="addDocker();"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a> </div></div>
 <table class="tablesorter" id="docker_containers">
   <thead>
@@ -214,7 +238,7 @@ function addDocker() {
       <td><?=$ct['Hostname'];?></td>
       <? $checked = is_autostart($ct['Name'], $dockercfg['DOCKER_CONTAINERS']) ? "checked" : ""; ?>
       <td><input type="checkbox"  onclick="autoStart('<?=$ct['Name'];?>'); return true;" <?=$checked;?>></td>
-      <td><a class="exec" onclick="execWithLog('/usr/bin/docker rm <?=$ct['Name'];?>','Removing container: <?=$ct['Name'];?>', true, true)">Remove</a></td>
+      <td><a class="exec" onclick="rmContainer('<?=$ct["Name"];?>','<?=$ct["Image"];?>');">Remove</a></td>
     </tr>
     <?};?>
   </tbody>

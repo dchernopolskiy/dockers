@@ -172,8 +172,8 @@ if ($_POST){
 		   implode(' -p ', $postArray['Ports']), implode(' -v ', $postArray['Volumes']), $postArray['Repository']);
 	$cmd = preg_replace('/\s+/', ' ', $cmd);
     $_GET['cmd'] = $cmd;
-    echo $cmd;
-/*     include("/usr/local/emhttp/plugins/dockerMan/execWithLog.php"); */
+/*     echo $cmd; */
+    include("/usr/local/emhttp/plugins/dockerMan/execWithLog.php");
 
 } else {
 	if($_GET['xmlTemplate']){
