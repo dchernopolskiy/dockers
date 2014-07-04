@@ -112,14 +112,5 @@ class DockerClient {
 		}
 		return $images;
 	}
-	
-	public function teste(){
-		$images = array();
-		$c = array();
-		$name = "dabfc8a44cb5";
-		$json = $this->getDockerJSON('/images/'.$name.'/json');
-		print_r($json);
-
-	}
 }
 ?>
