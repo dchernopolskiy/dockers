@@ -28,6 +28,20 @@ function getTemplates(){
 	return $out;
 }
 
+function prepareDir($dir){
+	if (!is_dir($dir)){
+		echo "Setting the ownership to nobody.";
+		mkdir($dir);
+		// shell_exec('/usr/bin/chmod 770 "$dir"');
+		// shell_exec('/usr/bin/chown -R 99:100 $dir');
+		chown($dir, 'nobody');
+		chgrp($dir, 'users');
+		sleep(1);
+		// exec('/usr/bin/chmod 770 "$dir"', $out, $retr_val);
+		// exec('/usr/bin/chown -R nobody:user "$dir"', $out, $retr_val);
+	}
+}
+
 function xmlToVariables($xmlfile){
     $xml = new SimpleXMLElement($xmlfile);
 
@@ -71,7 +85,7 @@ function xmlToVariables($xmlfile){
     return $out;
 };
 
-function postToXML($post){
+function postToXML($post, $setOwnership = FALSE){
 	$doc = new DOMDocument('1.0', 'utf-8');
 	$doc->preserveWhiteSpace = false;
     $doc->formatOutput = true;
@@ -122,6 +136,9 @@ function postToXML($post){
     for ($i = 0; $i < count($post["hostPath"]); $i++){
     	$tmpMode = (strpos($post["containerPath"][$i], ':ro')) ? 'ro' : 'rw';
     	$post["containerPath"][$i] = preg_replace('/:[row]+$/', '', $post["containerPath"][$i]);
+    	if ($setOwnership){
+    		prepareDir($post["hostPath"][$i]);
+    	}
     	$Volume = $Data->appendChild($doc->createElement('Volume'));
     	$HostDir = $Volume->appendChild($doc->createElement('HostDir'));
     	$HostDir->appendChild($doc->createTextNode(addslashes($post["hostPath"][$i])));
@@ -135,7 +152,7 @@ function postToXML($post){
 }
 
 if ($_POST){
-    $postXML = postToXML($_POST);
+    $postXML = postToXML($_POST, TRUE);
     $postArray = xmlToVariables($postXML);
     if(is_dir($xmlUserDir) === FALSE){
     	mkdir($xmlUserDir, 0777, true);
