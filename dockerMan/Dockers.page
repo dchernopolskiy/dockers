@@ -141,23 +141,38 @@ Docker Install Location:
 <script type="text/javascript" charset="utf-8">
 
 function rmContainer(container, image){
-	$.prompt("Are you sure?", {
-		title: "Removing container: " + container,
-		buttons: { "Just the container" : "ct", "Container and Image": "ct_im", "Cancel" : false },
-		position: { width: 430,},
-		submit: function(e,v,m,f){
-		// use e.preventDefault() to prevent closing when needed or return false. 
-		//e.preventDefault(); 
-		$.prompt.close();
-		if (v == "ct_im"){
-			var cmd = '/usr/bin/docker rm -f ' + container + '; docker rmi ' + image;
-			execWithLog(cmd ,'Removing container: ' + container, false, true);
-		} else if (v == "ct"){
-			var cmd = '/usr/bin/docker rm -f ' + container;
-			execWithLog(cmd ,'Removing container: ' + container, false, true);
-		}
-	}
-});}
+  $.prompt("Are you sure?", {
+    title: "Removing container: " + container,
+    buttons: { "Just the container" : "ct", "Container and Image": "ct_im", "Cancel" : false },
+    position: { width: 430,},
+    submit: function(e,v,m,f){
+
+      $.prompt.close();
+      if (v == "ct_im"){
+        var cmd = '/usr/bin/docker rm -f ' + container + '; docker rmi ' + image;
+        execWithLog(cmd ,'Removing container: ' + container, false, true);
+      } else if (v == "ct"){
+        var cmd = '/usr/bin/docker rm -f ' + container;
+        execWithLog(cmd ,'Removing container: ' + container, false, true);
+      }
+    }
+  });
+}
+
+function rmImage(image){
+  $.prompt("Are you sure?", {
+    title: "Removing image: " + image,
+    buttons: { "Yes, do this!": true, "Cancel" : false },
+    position: { width: 430,},
+    submit: function(e,v,m,f){
+      $.prompt.close();
+      if (v === true){
+        var cmd = '/usr/bin/docker rmi ' + image;
+        execWithLog(cmd ,'Removing image: ' + image, false, true);
+      }
+    }
+  });
+}
 
 $(document).ready(function() {
   $("#docker_containers").tablesorter( {sortList: [[1,0]]} );
@@ -169,10 +184,12 @@ function autoStart(container){
   document.getElementsByName("#container")[0].value = container;
   document.forms["formAutostart"].submit();
 };
+
 function containerControl(container, action){
   document.getElementById("#cmdStartStop").value = "/usr/bin/docker " + action + " " + container;
   document.forms["formStartStop"].submit();
 };
+
 function execWithLog(cmd, desc, ask, reload) {
   if (ask){
     r = confirm(desc+"\n\nAre you sure?");
@@ -188,7 +205,8 @@ function execWithLog(cmd, desc, ask, reload) {
       onClose: function(){ if (reload){location.reload();}},
     }
   });
-};
+}
+
 function addDocker() {
   reload=true;
   Shadowbox.open({
@@ -256,7 +274,7 @@ function addDocker() {
       <td><?=htmlentities($image['Id']);?></td>
       <td><?=htmlentities($image['Created']);?></td>
       <td><?=htmlentities($image['VirtualSize']);?></td>
-      <td><a class="exec" onclick="execWithLog('/usr/bin/docker rmi -f <?=htmlentities($image['Id']);?>','Removing image: <?=htmlentities($image['Id']);?>', true, true )">Remove</a></td>
+      <td><a class="exec" onclick="rmImage('<?=htmlentities($image['Id']);?>');">Remove</a></td>
     </tr>
     <?};?>
   </tbody>

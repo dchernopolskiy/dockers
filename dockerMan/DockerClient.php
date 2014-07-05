@@ -112,5 +112,6 @@ class DockerClient {
 		}
 		return $images;
 	}
+
 }
 ?>
