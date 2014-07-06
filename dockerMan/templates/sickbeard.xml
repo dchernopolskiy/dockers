@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Container>
-  <Name>sickbeard</Name>
+  <Name>SickBeard</Name>
   <Repository>needo/sickbeard</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>

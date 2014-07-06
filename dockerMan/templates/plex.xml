@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Containers>
-  <Name>plex</Name>
+  <Name>Plex</Name>
   <Repository>needo/plex</Repository>
   <BindTime>true</BindTime>
   <Privileged>true</Privileged>

@@ -1,11 +1,16 @@
 <?
 $relPath = '/usr/local/emhttp/plugins/dockerMan';
-$xmlUserDir = "/boot/config/plugins/Docker";
 
 $allXmlDir = array(
-	 0 => $xmlUserDir, 
-	 1 => $relPath."/templates",
+	 'user' => '/boot/config/plugins/Docker', 
+	 'built_in' => $relPath."/templates",
 	 );
+
+function debugLog($var){
+	echo "<pre>";
+	print_r($var);
+	echo "</pre>";
+}
 
 function getTemplates(){
 	global $allXmlDir;
@@ -19,7 +24,10 @@ function getTemplates(){
 					$ext = new SplFileInfo($file);
 					$ext = $ext->getExtension(); 
 					if($ext == "xml"){
-						$out[$dir.'/'.$file] = preg_replace("/\.{$ext}/", '', $file);
+						$out[] = array('type' => $key,
+							'path' => $dir.'/'.$file,
+							'name' => preg_replace("/\.{$ext}/", '', $file),
+							);
 					}
 				}
 			}
@@ -29,16 +37,18 @@ function getTemplates(){
 }
 
 function prepareDir($dir){
-	if (!is_dir($dir)){
-		echo "Setting the ownership to nobody.";
-		mkdir($dir);
+	if (strlen($dir)){
+		if (!is_dir($dir)){
+			echo "Setting the ownership to nobody.";
+			mkdir($dir);
 		// shell_exec('/usr/bin/chmod 770 "$dir"');
 		// shell_exec('/usr/bin/chown -R 99:100 $dir');
-		chown($dir, 'nobody');
-		chgrp($dir, 'users');
-		sleep(1);
+			chown($dir, 'nobody');
+			chgrp($dir, 'users');
+			sleep(1);
 		// exec('/usr/bin/chmod 770 "$dir"', $out, $retr_val);
 		// exec('/usr/bin/chown -R nobody:user "$dir"', $out, $retr_val);
+		}
 	}
 }
 
@@ -153,8 +163,10 @@ function postToXML($post, $setOwnership = FALSE){
 }
 
 if ($_POST){
+	//debugLog($_POST);
     $postXML = postToXML($_POST, TRUE);
     $postArray = xmlToVariables($postXML);
+    $xmlUserDir = $allXmlDir['user'];
     if(is_dir($xmlUserDir) === FALSE){
     	mkdir($xmlUserDir, 0777, true);
     }
@@ -177,7 +189,7 @@ if ($_POST){
 
 } else {
 	if($_GET['xmlTemplate']){
-		$xmlTemplate = urldecode($_GET['xmlTemplate']);
+		list($xmlType, $xmlTemplate) = split(':', urldecode($_GET['xmlTemplate']));
 		if(is_file($xmlTemplate)){
 			$doc = new DOMDocument();
 			$doc->load($xmlTemplate);
@@ -187,43 +199,71 @@ if ($_POST){
 			$templatePrivileged = (strtolower($fileVariables['Privileged']) == 'true') ? 'checked' : "";
 			$templateRepository = $fileVariables['Repository'];
 			$templateMode = $fileVariables['Mode'];
+			$readonly = ($xmlType == 'built_in') ? 'readonly="readonly"' : '';
+			$disabled = ($xmlType == 'built_in') ? 'disabled="disabled"' : '';
 
 			$Ports = $fileVariables['Ports'];
-			$row ="<tr id=\"portNum%s\"><td><input type=\"text\" name=\"hostPort[]\" value=\"%s\" class=\"textPort\"></td> <td><input type=\"text\" 
-					name=\"containerPort[]\" value=\"%s\" class=\"textPort\"><input type=\"button\" value=\"Remove\" onclick=\"removePort(%s);\"></td></td>\n";
 			$templatePorts = '';
+			$row = '
+					<tr id="portNum%s">
+						<td>
+							<input type="text" name="containerPort[]" value="%s" class="textPort" %s title="Set the port your app uses inside the container.">
+
+						</td>
+						<td>
+							<input type="text" name="hostPort[]" value="%s" class="textPort" title="Set the port you use to interact with the app.">
+							<input type="button" value="Remove" onclick="removePort(%s);" %s>
+						</td>
+					</tr>';
+
 			for ($i=0; $i < count($Ports); $i++) { 
 				if(strlen($Ports[$i])){
 					$j = $i + 100;
 					list($HostPort, $ContainerPort) = split(':', $Ports[$i], 2);
-					$templatePorts .= sprintf($row, $j, $HostPort, $ContainerPort, $j);
+					$templatePorts .= sprintf($row, $j, $ContainerPort, $readonly, $HostPort, $j, $disabled);
 				}
 			}
 
 			$Volumes = $fileVariables['Volumes'];
-			 
-			$row = '<tr id="pathNum%s"><td><input type="text" id="hostPath%s" name="hostPath[]" value="%s" class="textPath"  onclick="toggleBrowser(%s);"/>
-				<br><div id="fileTree%s" class="fileTree"></div></td><td><input type="text" name="containerPath[]" value="%s" class="textPath"
-				onclick="hideBrowser(%s);"><input type="button" value="Remove" onclick="removePath(%s);"></td></tr>';
-			
 			$templateVolumes = '';
+			$row = '
+				<tr id="pathNum%s">
+					<td>
+						<input type="text" name="containerPath[]" value="%s" class="textPath" onclick="hideBrowser(%s);" %s title="The directory your app uses inside the container. Ex: /config">
+					</td>
+					<td>
+						<input type="text" id="hostPath%s" name="hostPath[]" value="%s" class="textPath" onclick="toggleBrowser(%s);" title="The directory in your array the app have access to. Ex: /mnt/user/Movies"/>
+						<div id="fileTree%s" class="fileTree"></div>
+						<input type="button" value="Remove" onclick="removePath(%s);" %s />
+					</td>
+				</tr>';
+			
 			for ($i=0; $i < count($Volumes); $i++) { 
 				if(strlen($Volumes[$i])){
 					$j = $i + 100;
 					list($HostDir, $ContainerDir) = split(':', preg_replace('/[\"]/', '', $Volumes[$i]), 2);
-					$templateVolumes .= sprintf($row, $j,$j, $HostDir, $j,$j,$ContainerDir, $j,$j);
+					$templateVolumes .= sprintf($row, $j, $ContainerDir, $j, $readonly, $j, $HostDir, $j, $j, $j, $disabled);
 				}
 			}
 
 			$Vars = $fileVariables['Variables'];
-			$row ="<tr id=\"varNum%s\"><td><input type=\"text\" name=\"VariableName[]\" value=\"%s\" class=\"textEnv\"></td> <td><input type=\"text\" 
-					name=\"VariableValue[]\" value=\"%s\" class=\"textEnv\"><input type=\"button\" value=\"Remove\" onclick=\"removeEnv(%s);\"></td></td>\n";
 			$templateVariables = '';
+			$row = '
+				<tr id="varNum%s">
+					<td>
+						<input type="text" name="VariableName[]" value="%s" class="textEnv" %s/>
+					</td>
+					<td>
+						<input type="text" name="VariableValue[]" value="%s" class="textEnv">
+						<input type="button" value="Remove" onclick="removeEnv(%s);" %s>
+					</td>
+				</tr>';
+
 			for ($i=0; $i < count($Vars); $i++) { 
 				if(strlen($Vars[$i])){
 					$j = $i + 100;
 					list($VarName, $VarValue) = split('=', preg_replace('/[\"]/', '', $Vars[$i]), 2);
-					$templateVariables .= sprintf($row, $j, $VarName, $VarValue, $j);
+					$templateVariables .= sprintf($row, $j, $VarName, $readonly, $VarValue, $j, $disabled);
 				}
 			}
 
@@ -270,7 +310,7 @@ if ($_POST){
 		width: 100px;
 	}
 	table.pathTab{
-		width: 600px;
+		width: 650px;
 	}
 	table.portRows{
 		width: 320px;
@@ -302,10 +342,16 @@ if ($_POST){
 				<td >
 					<select id="TemplateSelect" size="1">
 						<option value="" selected>Select a template</option>
-						<? foreach (getTemplates() as $key => $value) { 
-							$selected = (isset($xmlTemplate) && $key == $xmlTemplate) ? ' selected ' : '';
-						echo "\t\t\t\t\t\t<option value=\"$key\" {$selected} >$value</option>\n";};?>
+						<? foreach (getTemplates() as $value) { 
+							$selected = (isset($xmlTemplate) && $value['path'] == $xmlTemplate) ? ' selected ' : '';
+						echo "\t\t\t\t\t\t<option value=\"" . $value['type'] . ":" . $value['path'] . "\" {$selected} >" . $value['name'] . "</option>\n";};?>
 					</select>
+				</td>
+			</tr>
+			<tr>
+			<td></td>
+				<td>
+					
 				</td>
 			</tr>
 			<tr>
@@ -351,21 +397,21 @@ if ($_POST){
 		<table id="pathRows" class="pathTab">
 			<thead>
 				<tr>
-					<td>Host path:</td>
-
 					<td>Container volume:</td>
+					<td>Host path:</td>
 				</tr>
 			</thead>
 
 			<tbody>
 				<tr>
-					<td id="fBrowser">
-						<input type="text" id="hostPath1" name="hostPath[]" class="textPath" autocomplete="off" onclick="toggleBrowser(1);"><br>
-
-						<div id="fileTree1" class="fileTree"></div>
+					<td>
+						<input type="text" id="containerPath1" name="containerPath[]" class="textPath" onfocus="hideBrowser(1);" title="The directory your app uses inside the container. Ex: /config"> 
 					</td>
-
-					<td><input type="text" id="containerPath1" name="containerPath[]" class="textPath" onfocus="hideBrowser(1);"> <input onclick="addPath(this.form);" type="button" value="Add Path" class="btn"></td>
+					<td>
+						<input type="text" id="hostPath1" name="hostPath[]" class="textPath" autocomplete="off" onclick="toggleBrowser(1);" title="The directory in your array the app have access to. Ex: /mnt/user/Movies">
+						<div id="fileTree1" class="fileTree"></div>
+						<input onclick="addPath(this.form);" type="button" value="Add Path" class="btn">
+					</td>
 				</tr>
 				<?if(isset($templateVolumes)){echo $templateVolumes;}?> 
 			</tbody>
@@ -378,15 +424,18 @@ if ($_POST){
 			<table id="portRows" class="portRows">
 				<tbody>
 					<tr>
-						<td>Host port:</td>
-
 						<td>Container port:</td>
+						<td>Host port:</td>
 					</tr>
 
 					<tr>
-						<td><input type="text" name="add_hostPort" class="textPort"></td>
-
-						<td><input type="text" name="add_containerPort" class="textPort"> <input onclick="addPort(this.form);" type="button" value="Add port" class="btn"></td>
+						<td>
+							<input type="text" id="containerPort1" name="containerPort[]" class="textPort" title="Set the port your app uses inside the container.">
+						</td>
+						<td>
+							<input type="text" id="hostPort1" name="hostPort[]" class="textPort" title="Set the port you use to interact with the app.">
+							<input onclick="addPort(this.form);" type="button" value="Add port" class="btn">
+						</td>
 					</tr>
 					<?if(isset($templatePorts)){echo $templatePorts;}?> 
 				</tbody>
@@ -401,7 +450,6 @@ if ($_POST){
 			<thead>
 				<tr>
 					<td>Variable Name:</td>
-
 					<td>Variable Value:</td>
 				</tr>
 			</thead>
@@ -409,9 +457,12 @@ if ($_POST){
 			<tbody>
 				<tr>
 					<td>
-						<input type="text" name="add_VariableName" class="textEnv">
+						<input type="text" id="VariableName1" name="VariableName[]" class="textEnv">
 					</td>
-					<td><input type="text" name="add_VariableValue" class="textEnv"> <input onclick="addEnv(this.form);" type="button" value="Add Variable"></td>
+					<td>
+						<input type="text" id="VariableValue1" name="VariableValue[]" class="textEnv"> 
+						<input onclick="addEnv(this.form);" type="button" value="Add Variable">
+					</td>
 				</tr>
 				<?if(isset($templateVariables)){echo $templateVariables;}?> 
 			</tbody>

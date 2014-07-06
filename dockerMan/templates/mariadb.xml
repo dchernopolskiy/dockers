@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Container>
-  <Name>mariadb</Name>
+  <Name>MariaDB</Name>
   <Repository>needo/mariadb</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>

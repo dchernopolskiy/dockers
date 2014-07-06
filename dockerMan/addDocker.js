@@ -83,10 +83,23 @@ function hideBrowser(N) {
 
 function addPort(frm) {
 	portNum++;
-var row ='<tr id="portNum'+portNum+'"><td><input type="text" name="hostPort[]" value="'+frm.add_hostPort.value+'" class="textPort"></td> <td><input type="text" name="containerPort[]" value="'+ frm.add_containerPort.value+'" class="textPort"><input type="button" value="Remove" onclick="removePort(' + portNum + ');"></td></td>';
-	jQuery('#portRows').append(row);
-	frm.add_hostPort.value = '';
-	frm.add_containerPort.value = '';
+	var hostPort = $("#hostPort1");
+	var containerPort = $("#containerPort1");
+	var row = [
+	'<tr id="portNum{0}">',
+	'<td>',
+	'<input type="text" name="containerPort[]" value="{2}" class="textPort" title="Set the port your app uses inside the container.">',
+	'</td>',
+	'<td>',
+	'<input type="text" name="hostPort[]" value="{1}" class="textPort" title="Set the port you use to interact with the app.">',
+	'<input type="button" value="Remove" onclick="removePort({0});">',
+	'</td>',
+	'</tr>',
+	].join('');
+
+	$('#portRows').append(row.format(portNum, hostPort.val(), containerPort.val()));
+	hostPort.val('');
+	containerPort.val('');
 }
 
 function removePort(rnum) {
@@ -97,9 +110,20 @@ function addPath(frm) {
 	pathNum++;
 	var hostPath = $("#hostPath1");
 	var containerPath = $("#containerPath1");
-	var row = '<tr id="pathNum{0}"><td><input type="text" id="hostPath{0}" name="hostPath[]" value="{1}" class="textPath"  onclick="toggleBrowser({0});"/>'+
-				'<br><div id="fileTree{0}" class="fileTree"></div></td><td><input type="text" name="containerPath[]" value="{2}" class="textPath" '+
-				'onclick="hideBrowser({0});"><input type="button" value="Remove" onclick="removePath({0});"></td></tr>';
+
+	var row = [
+	'<tr id="pathNum{0}">',
+	'<td>',
+	'<input type="text" name="containerPath[]" value="{2}" class="textPath" onclick="hideBrowser({0});" title="The directory your app uses inside the container. Ex: /config">',
+	'</td>',
+	'<td>',
+	'<input type="text" id="hostPath{0}" name="hostPath[]" value="{1}" class="textPath"  onclick="toggleBrowser({0});" title="The directory in your array the app have access to. Ex: /mnt/user/Movies"/>',
+	'<div id="fileTree{0}" class="fileTree"></div>',
+	'<input type="button" value="Remove" onclick="removePath({0});"></td></tr>',
+	'</td>',
+	'</tr>',
+	].join('');
+
 	$('#pathRows tbody').append(row.format(pathNum, hostPath.val(), containerPath.val()));
 	hostPath.val('');
 	containerPath.val('');
@@ -111,10 +135,25 @@ function removePath(rnum) {
 
 function addEnv(frm) {
 	varNum++;
-var row ='<tr id="varNum'+varNum+'"><td><input type="text" name="VariableName[]" value="'+frm.add_VariableName.value+'" class="textEnv"></td> <td><input type="text" name="VariableValue[]" value="'+ frm.add_VariableValue.value+'" class="textEnv"><input type="button" value="Remove" onclick="removeEnv(' + varNum + ');"></td></td>';
-	jQuery('#envRows tbody').append(row);
-	frm.add_VariableName.value = '';
-	frm.add_VariableValue.value = '';
+	var VariableName = $("#VariableName1");
+	var VariableValue = $("#VariableValue1");
+
+	var row = [
+	'<tr id="varNum{0}">',
+	'<td>',
+	'<input type="text" name="VariableName[]" value="{1}" class="textEnv">',
+	'</td>',
+	'<td>',
+	'<input type="text" name="VariableValue[]" value="{2}" class="textEnv">',
+	'<input type="button" value="Remove" onclick="removeEnv({0});">',
+	'</td>',
+	'</tr>',
+	].join('');
+
+	$('#envRows tbody').append(row.format(varNum, VariableName.val(), VariableValue.val()));
+	VariableName.val('');
+	VariableValue.val('');
+
 }
 
 function removeEnv(rnum) {

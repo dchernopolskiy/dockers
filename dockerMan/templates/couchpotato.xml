@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Container>
-  <Name>couchpotato</Name>
+  <Name>Couchpotato</Name>
   <Repository>needo/couchpotato</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>
