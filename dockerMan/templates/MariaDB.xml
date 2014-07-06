@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container>
+  <Name>MariaDB</Name>
+  <Repository>needo/mariadb</Repository>
+  <BindTime>true</BindTime>
+  <Privileged>false</Privileged>
+  <Networking>
+    <Mode>bridge</Mode>
+    <Publish>
+      <Port>
+        <HostPort>3306</HostPort>
+        <ContainerPort>3306</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Environment/>
+  <Data>
+    <Volume>
+      <HostDir></HostDir>
+      <ContainerDir>/db</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+</Container>
