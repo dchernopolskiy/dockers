@@ -194,6 +194,15 @@ if ($_POST){
 			$doc = new DOMDocument();
 			$doc->load($xmlTemplate);
 			$fileXML = $doc->saveXML();
+			$templateDescription = '';
+			foreach($doc->getElementsByTagName('Description') as $desc){
+				$templateDescription .= preg_replace('/\\\n/', '<br>', $desc->nodeValue);
+			}
+			$Registry = '';
+			foreach($doc->getElementsByTagName('Registry') as $reg){
+				$Registry .= $reg->nodeValue;
+			}
+
 			$fileVariables = xmlToVariables($fileXML);
 			$templateName = $fileVariables['Name'];
 			$templatePrivileged = (strtolower($fileVariables['Privileged']) == 'true') ? 'checked' : "";
@@ -208,7 +217,6 @@ if ($_POST){
 					<tr id="portNum%s">
 						<td>
 							<input type="text" name="containerPort[]" value="%s" class="textPort" %s title="Set the port your app uses inside the container.">
-
 						</td>
 						<td>
 							<input type="text" name="hostPort[]" value="%s" class="textPort" title="Set the port you use to interact with the app.">
@@ -323,13 +331,24 @@ if ($_POST){
 		vertical-align: bottom;
 		text-align: left;
 	} 
+	.desc {
+		background: #FFF;
+		border: 1px solid #dcdcdc;
+		padding: 2px 6px;
+		line-height: 20px;
+		outline: none;
+		-webkit-box-shadow: inset 2px 2px 6px #eef0f0;
+		-moz-box-shadow: inset 2px 2px 6px #eef0f0;
+		box-shadow: inset 2px 2px 6px #eef0f0;
+		margin-top:0;
+		margin-right: 10px;
+	}
 </style>
 <form method="GET" id="formTemplate">
 	<input type="hidden" id="#xmlTemplate" name="xmlTemplate" value="" />
 </form>
 
 <div id="canvas" class="canvas" style="z-index:1;">
-
 
 	<div id="title">
 		<span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Preferences:</span>
@@ -338,7 +357,7 @@ if ($_POST){
 	<form method="post">
 		<table class="Preferences">
 			<tr>
-				<td>Template:</td>
+				<td style="width: 150px;">Template:</td>
 				<td >
 					<select id="TemplateSelect" size="1">
 						<option value="" selected>Select a template</option>
@@ -348,12 +367,23 @@ if ($_POST){
 					</select>
 				</td>
 			</tr>
+			<?if(isset($templateDescription) && strlen($templateDescription)){?>
 			<tr>
-			<td></td>
+				<td style="vertical-align: top;">
+					Description:
+				</td>
 				<td>
-					
+					<div class="desc">
+						<?
+						echo $templateDescription;
+						if(isset($Registry)){
+							echo "<br><br>Container Page: <a href=\"{$Registry}\" target=\"_blank\">{$Registry}</a>";
+						}
+						?>
+					</div> 
 				</td>
 			</tr>
+			<?};?>
 			<tr>
 				<td>Name:</td>
 
