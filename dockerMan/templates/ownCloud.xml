@@ -16,7 +16,12 @@
       </Port>
     </Publish>
   </Networking>
-  <Environment/>
+  <Environment>
+    <Variable>
+      <Name>SUBJECT</Name>
+      <Value>/C=COUNTRY/ST=STATE/L=City/O=Organization/OU=Organization Unit/CN=yourhome.com</Value>
+    </Variable>
+  </Environment>
   <Data>
     <Volume>
       <HostDir></HostDir>
