@@ -4,8 +4,12 @@ Title="Docker"
 ---
 <link type="text/css" rel="stylesheet" href="/plugins/webGui/style/default_tablesorter.css">
 <script type="text/javascript" src="/plugins/vendor/tablesorter/jquery.tablesorter.min.js"></script>
-<link type="text/css" rel="stylesheet" href="/plugins/vendor/imprompu/jquery-impromptu.min.css">
-<script type="text/javascript" src="/plugins/vendor/imprompu/jquery-impromptu.min.js"></script>
+<link type="text/css" rel="stylesheet" href="/plugins/vendor/impromptu/jquery-impromptu.min.css">
+<script type="text/javascript" src="/plugins/vendor/impromptu/jquery-impromptu.js"></script>
+<link type="text/css" rel="stylesheet" href="/plugins/dockerMan/jquery-ui/jquery-ui.min.css">
+<link type="text/css" rel="stylesheet" href="/plugins/dockerMan/jquery-ui/jquery-ui.structure.min.css">
+<script type="text/javascript" src="/plugins/dockerMan/jquery-ui/jquery-ui.min.js"></script>
+
 <?php
 function pgrep($process_name) {
 	$pid = exec("pgrep $process_name", $output, $retval);
@@ -69,6 +73,7 @@ function serverIP(){
   for ($i=0; $i < count($matches[1]); $i++) {
     if (in_array($matches[1][$i], array('br0','eth0'))) {
       $IP = $matches[2][$i];
+      break;
     }
   }
   return $IP;
@@ -154,57 +159,123 @@ Docker Install Location:
 </style>
 
 <script type="text/javascript" charset="utf-8">
+
+function rmContainer(container, image){
+  $('#dialog-confirm').prop('title', 'Removing the container: ' + container);
+  $( "#dialog-confirm" ).dialog({
+    resizable: false,
+    width: 500,
+    height:120,
+    modal: true,
+    buttons: {
+      "Just the container": function() {
+        $( this ).dialog( "close" );
+        var cmd = '/usr/bin/docker rm -f ' + container;
+        execWithLog(cmd ,'Removing container: ' + container, false, true);
+      },
+      "Container and image": function() {
+        $( this ).dialog( "close" );
+        var cmd = '/usr/bin/docker rm -f ' + container + '; docker rmi ' + image;
+        execWithLog(cmd ,'Removing container: ' + container, false, true);
+      },
+      Cancel: function() {
+        $( this ).dialog( "close" );
+      }
+    }
+  });
+}
+
+function rmImage(image){
+  $('#dialog-confirm').prop('title', 'Removing the image: ' + image);
+  $( "#dialog-confirm" ).dialog({
+    resizable: false,
+    width: 500,
+    height:120,
+    modal: true,
+    buttons: {
+      "Just do it!": function() {
+        $( this ).dialog( "close" );
+        var cmd = '/usr/bin/docker rmi ' + image;
+        execWithLog(cmd ,'Removing image: ' + image, false, true);
+      },
+      Cancel: function() {
+        $( this ).dialog( "close" );
+      }
+    }
+  });
+}
+
+function updateContainer(container){
+  $('#dialog-confirm').prop('title', 'Updating the container: ' + container);
+  $( "#dialog-confirm" ).dialog({
+    resizable: false,
+    width: 500,
+    height:120,
+    modal: true,
+    buttons: {
+      "Just do it!": function() {
+        $( this ).dialog( "close" );
+        execAddContainer(container, "Updating container: " + container, true);
+      },
+      Cancel: function() {
+        $( this ).dialog( "close" );
+      }
+    }
+  });
+}
+
 $(document).ready(function() {
   $("#docker_containers").tablesorter( {sortList: [[1,0]]} );
   $('#docker_containers tr:even').addClass('odd');
   $("#docker_images").tablesorter( {sortList: [[0,0]]} );
   $('#docker_images tr:even').addClass('odd');
 });
-function rmContainer(container, image){
-  $.prompt("Are you sure?", {
-    title: "Removing container: " + container,
-    buttons: { "Just the container" : "ct", "Container and Image": "ct_im", "Cancel" : false },
-    position: { width: 430,},
-    submit: function(e,v,m,f){
+// function rmContainer(container, image){
+//   $.prompt("Are you sure?", {
+//     title: "Removing container: " + container,
+//     buttons: { "Just the container" : "ct", "Container and Image": "ct_im", "Cancel" : false },
+//     position: { width: 430,},
+//     submit: function(e,v,m,f){
 
-      $.prompt.close();
-      if (v == "ct_im"){
-        var cmd = '/usr/bin/docker rm -f ' + container + '; docker rmi ' + image;
-        execWithLog(cmd ,'Removing container: ' + container, false, true);
-      } else if (v == "ct"){
-        var cmd = '/usr/bin/docker rm -f ' + container;
-        execWithLog(cmd ,'Removing container: ' + container, false, true);
-      }
-    }
-  });
-}
-function rmImage(image){
-  $.prompt("Are you sure?", {
-    title: "Removing image: " + image,
-    buttons: { "Yes, do this!": true, "Cancel" : false },
-    position: { width: 430,},
-    submit: function(e,v,m,f){
-      $.prompt.close();
-      if (v === true){
-        var cmd = '/usr/bin/docker rmi ' + image;
-        execWithLog(cmd ,'Removing image: ' + image, false, true);
-      }
-    }
-  });
-}
-function updateContainer(container){
-  $.prompt("Are you sure?", {
-    title: "Updating the container: " + container,
-    buttons: { "Yes, do this!": true, "Cancel" : false },
-    position: { width: 430,},
-    submit: function(e,v,m,f){
-      $.prompt.close();
-      if (v === true){
-        execAddContainer(container, "Updating container: " + container, true);
-      }
-    }
-  });
-}
+//       $.prompt.close();
+//       if (v == "ct_im"){
+//         var cmd = '/usr/bin/docker rm -f ' + container + '; docker rmi ' + image;
+//         execWithLog(cmd ,'Removing container: ' + container, false, true);
+//       } else if (v == "ct"){
+//         var cmd = '/usr/bin/docker rm -f ' + container;
+//         execWithLog(cmd ,'Removing container: ' + container, false, true);
+//       }
+//     }
+//   });
+// }
+// function rmImage(image){
+//   $.prompt("Are you sure?", {
+//     title: "Removing image: " + image,
+//     buttons: { "Yes, do this!": true, "Cancel" : false },
+//     position: { width: 430,},
+//     submit: function(e,v,m,f){
+//       $.prompt.close();
+//       if (v === true){
+//         var cmd = '/usr/bin/docker rmi ' + image;
+//         execWithLog(cmd ,'Removing image: ' + image, false, true);
+//       }
+//     }
+//   });
+// }
+// function updateContainer(container){
+//   $.prompt("Are you sure?", {
+//     title: "Updating the container: " + container,
+//     buttons: { "Yes, do this!": true, "Cancel" : false },
+//     position: { width: 430,},
+//     submit: function(e,v,m,f){
+//       e.preventDefault(); 
+//       $.prompt.close();
+//       if (v === true){
+//         execAddContainer(container, "Updating container: " + container, true);
+//       }
+//     }
+//   });
+// }
 
 function autoStart(container){
   document.getElementsByName("#container")[0].value = container;
@@ -256,7 +327,8 @@ function addDocker() {
   });
 };
 </script>
-
+<div id="dialog-confirm" title=""></div>
+<button onclick="teste();">teste</button>
 <form markdown="1" id="formAutostart" method="POST" action="" target="progressFrame">
   <input type="hidden" name="#container" value="none" />
   <input type="hidden" name="#file" value="<?=$cfgfile;?>" />
