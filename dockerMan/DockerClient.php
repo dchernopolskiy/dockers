@@ -62,14 +62,6 @@ class DockerClient {
 		foreach($json as $obj){
 			$c = array();
 
-			$ports = array();
-			foreach($obj['Ports'] as $p){
-				$port = $p['IP'] ? $p['IP'].":" : "";
-				$port .= $p['PublicPort'] ? $p['PublicPort']."->" : "";
-				$port .= $p['PrivatePort'];
-				$port .= $p['Type'] ? "/".$p['Type'] : "";
-				$ports[] = $port;
-			}
 			$status = $obj['Status'] ? $obj['Status'] : "None";
 			preg_match("/\b^Up\b/", $status, $matches);
 			$running = $matches ? TRUE : FALSE;
@@ -81,7 +73,7 @@ class DockerClient {
 			$c["Cmd"]       = $obj['Command'];
 			$c["Id"]        = substr($obj['Id'],0,12);
 			$c["Created"]   = $this->humanTiming($obj['Created']);
-			$c["Ports"]     = $ports;
+			$c["Ports"]     = $obj['Ports'];
 			
 			$containers[]   = $c;
 		}

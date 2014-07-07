@@ -59,6 +59,18 @@ if ($_POST){
 include("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 $docker = new DockerClient();
 
+function serverIP(){
+  preg_match_all("/\d:\s+([^\s+]*)\s+inet\s+([^\/]*).+/", shell_exec('ip -o addr') , $matches);
+  unset($matches[0]);
+  $IP = '';
+  for ($i=0; $i < count($matches[1]); $i++) {
+    if (in_array($matches[1][$i], array('br0','eth0'))) {
+      $IP = $matches[2][$i];
+    }
+  }
+  return $IP;
+}
+
 function is_autostart($ct_name, $string){
 	foreach( explode(',', $string) as $x) {
 		if ( $x == $ct_name){
@@ -238,7 +250,15 @@ function addDocker() {
   </thead>
   <tbody>
     <? $all_containers = $docker->getDockerContainers();
-       foreach($all_containers as $ct){ ?>
+      $IP = serverIP();
+      foreach($all_containers as $ct){ 
+        $ports = array();
+        foreach ($ct['Ports'] as $p) {
+          $addr = $IP.":".$p['PublicPort'];
+          $ports[] = "<a href=\"http://{$addr}\" target=\"_blank\">{$addr}->".$p['PrivatePort']."/".$p['Type'];
+        }
+
+        ?>
     <tr>
       <td><?
       print $ct["Running"] ? 
@@ -250,7 +270,7 @@ function addDocker() {
       <td><?=$ct['Cmd'];?></td>
       <td><?=$ct['Created'];?></td>
       <td><a class="log" onclick="execWithLog('/usr/bin/docker logs <?=$ct['Name'];?>','Log for <?=$ct['Name'];?>', false, false)"><?=$ct['Status'];?></a></td>
-      <td><?=implode("<br>", $ct['Ports']);?></td>
+      <td><?=implode("<br>", $ports);?></td>
       <td><?=$ct['Id'];?></td>
       <? $checked = is_autostart($ct['Name'], $dockercfg['DOCKER_CONTAINERS']) ? "checked" : ""; ?>
       <td><input type="checkbox"  onclick="autoStart('<?=$ct['Name'];?>'); return true;" <?=$checked;?>></td>
