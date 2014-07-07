@@ -328,7 +328,6 @@ function addDocker() {
 };
 </script>
 <div id="dialog-confirm" title=""></div>
-<button onclick="teste();">teste</button>
 <form markdown="1" id="formAutostart" method="POST" action="" target="progressFrame">
   <input type="hidden" name="#container" value="none" />
   <input type="hidden" name="#file" value="<?=$cfgfile;?>" />
