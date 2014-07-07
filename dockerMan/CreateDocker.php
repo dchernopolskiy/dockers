@@ -39,61 +39,13 @@ function getTemplates(){
 function prepareDir($dir){
 	if (strlen($dir)){
 		if (!is_dir($dir)){
-			echo "Setting the ownership to nobody.";
-			mkdir($dir);
-		// shell_exec('/usr/bin/chmod 770 "$dir"');
-		// shell_exec('/usr/bin/chown -R 99:100 $dir');
+			echo " Setting the ownership to nobody.";
 			chown($dir, 'nobody');
 			chgrp($dir, 'users');
 			sleep(1);
-		// exec('/usr/bin/chmod 770 "$dir"', $out, $retr_val);
-		// exec('/usr/bin/chown -R nobody:user "$dir"', $out, $retr_val);
 		}
 	}
 }
-
-function xmlToVariables($xmlfile){
-    $xml = new SimpleXMLElement($xmlfile);
-
-    $Name = $xml->Name;
-    $Repository = $xml->Repository.'';
-    $Privileged = $xml->Privileged.'';
-    $Mode = $xml->Networking->Mode.'';
-    $BindTime = (strtolower($xml->BindTime) == 'true') ? TRUE : FALSE ;
-
-    $Ports = array('');
-    foreach($xml->Networking->Publish->Port as $p){
-        if ($p->ContainerPort == ""){continue;}
-        $p = $p->HostPort.':'.$p->ContainerPort.'/'.$p->Protocol;
-        $Ports[] = preg_replace('/\s/', '', $p);
-    }
-
-    $Variables = array('');
-    foreach($xml->Environment->Variable as $v){
-        if ($v->Name == ""){continue;}
-        $Variables[] = trim($v->Name).'="'.$v->Value.'"';
-    }
-
-    $Volumes = array('');
-    foreach($xml->Data->Volume as $v){
-        if ($v->HostDir == "" && $v->ContainerDir == ""){continue;}
-        $op = (strtolower($v->Mode) == 'ro') ? 'ro' : 'rw'; 
-        $Volumes[] = '"'.$v->HostDir.'":"'.$v->ContainerDir.'":'.$op;
-    }
-
-    $out = array(
-        'Name' => $Name,
-        'Ports' => $Ports,
-        'Repository' => $Repository,
-        'Privileged' => $Privileged,
-        'Mode' => $Mode,
-        'BindTime' => $BindTime,
-        'Variables' => $Variables,
-        'Volumes' => $Volumes,
-        );
-
-    return $out;
-};
 
 function postToXML($post, $setOwnership = FALSE){
 	$doc = new DOMDocument('1.0', 'utf-8');
@@ -102,23 +54,22 @@ function postToXML($post, $setOwnership = FALSE){
 	$root = $doc->createElement('Container');
 	$root = $doc->appendChild($root);
 
-	$docName = $root->appendChild($doc->createElement('Name'));
-	$docName->appendChild($doc->createTextNode(addslashes($post["containerName"])));
-
+	$docName       = $root->appendChild($doc->createElement('Name'));
 	$docRepository = $root->appendChild($doc->createElement('Repository'));
-	$docRepository->appendChild($doc->createTextNode(addslashes($post["Repository"])));
-
-	$BindTime = $root->appendChild($doc->createElement('BindTime'));
-	$BindTime->appendChild($doc->createTextNode((strtolower($post["BindTime"]) == 'on') ? 'true' : 'false'));
-
-	$Privileged = $root->appendChild($doc->createElement('Privileged'));
-	$Privileged->appendChild($doc->createTextNode((strtolower($post["Privileged"]) == 'on') ? 'true' : 'false'));
-
+	$BindTime      = $root->appendChild($doc->createElement('BindTime'));
+	$Privileged    = $root->appendChild($doc->createElement('Privileged'));
+	$Environment   = $root->appendChild($doc->createElement('Environment'));
 	$docNetworking = $root->appendChild($doc->createElement('Networking'));
-	$Mode = $docNetworking->appendChild($doc->createElement('Mode'));
+	$Data          = $root->appendChild($doc->createElement('Data'));
+	$Mode          = $docNetworking->appendChild($doc->createElement('Mode'));
+	$Publish       = $docNetworking->appendChild($doc->createElement('Publish'));
+	
+	$docName->appendChild($doc->createTextNode(addslashes($post["containerName"])));
+	$docRepository->appendChild($doc->createTextNode(addslashes($post["Repository"])));
+	$BindTime->appendChild($doc->createTextNode((strtolower($post["BindTime"])     == 'on') ? 'true' : 'false'));
+	$Privileged->appendChild($doc->createTextNode((strtolower($post["Privileged"]) == 'on') ? 'true' : 'false'));
 	$Mode->appendChild($doc->createTextNode(strtolower($post["NetworkType"])));
 
-	$Publish = $docNetworking->appendChild($doc->createElement('Publish'));
     for ($i = 0; $i < count($post["hostPort"]); $i++){
     	$protocol = (strpos($post["containerPort"][$i], '/udp')) ? 'udp' : 'tcp';
     	$post["containerPort"][$i] = preg_replace('/\/tcp|\/udp/', '', $post["containerPort"][$i]);
@@ -133,7 +84,6 @@ function postToXML($post, $setOwnership = FALSE){
      	$Protocol->appendChild($doc->createTextNode($protocol));
     };
 
-	$Environment = $root->appendChild($doc->createElement('Environment'));
     for ($i = 0; $i < count($post["VariableName"]); $i++){
     	$Variable = $Environment->appendChild($doc->createElement('Variable'));
     	$n = $Variable->appendChild($doc->createElement('Name'));
@@ -142,7 +92,6 @@ function postToXML($post, $setOwnership = FALSE){
     	$v->appendChild($doc->createTextNode(addslashes(trim($post["VariableValue"][$i]))));
     }
 
-    $Data = $root->appendChild($doc->createElement('Data'));
     for ($i = 0; $i < count($post["hostPath"]); $i++){
     	if (! strlen($post["containerPath"][$i])){continue; }
     	$tmpMode = (strpos($post["containerPath"][$i], ':ro')) ? 'ro' : 'rw';
@@ -155,17 +104,19 @@ function postToXML($post, $setOwnership = FALSE){
     	$HostDir->appendChild($doc->createTextNode(addslashes($post["hostPath"][$i])));
     	$ContainerDir = $Volume->appendChild($doc->createElement('ContainerDir'));
     	$ContainerDir->appendChild($doc->createTextNode(addslashes($post["containerPath"][$i])));
-    	$Mode = $Volume->appendChild($doc->createElement('Mode'));
-    	$Mode->appendChild($doc->createTextNode($tmpMode));
+    	$DirMode = $Volume->appendChild($doc->createElement('Mode'));
+    	$DirMode->appendChild($doc->createTextNode($tmpMode));
     }
-
     return $doc->saveXML();
 }
 
 if ($_POST){
 	//debugLog($_POST);
     $postXML = postToXML($_POST, TRUE);
-    $postArray = xmlToVariables($postXML);
+    //debugLog($postXML);
+    $doc = new DOMDocument();
+    $doc->loadXML($postXML);
+
     $xmlUserDir = $allXmlDir['user'];
     if(is_dir($xmlUserDir) === FALSE){
     	mkdir($xmlUserDir, 0777, true);
@@ -174,17 +125,51 @@ if ($_POST){
     	file_put_contents($xmlUserDir.'/my-'.$postArray['Name'].'.xml', $postXML);
     }
 
-    $postArray['Name'] = (strlen($postArray['Name'])) ? '--name="'.$postArray['Name'].'"' : "";
-    $postArray['Privileged'] = (strtolower($postArray['Privileged']) == 'true') ? '--privileged="true"' : "";
-    $postArray['Mode'] = '--net="'.strtolower($postArray['Mode']).'"';
-	
-	if($postArray['BindTime'] === TRUE){$postArray['Volumes'][] = '"/etc/localtime":"/etc/localtime":ro';}
+	$Name       = $doc->getElementsByTagName( "Name" )->item(0)->nodeValue;
+	$Name       = (strlen($Name)) ? '--name="' . $Name . '"' : "";
+	$Privileged = $doc->getElementsByTagName( "Privileged" )->item(0)->nodeValue;
+	$Privileged = (strtolower($Privileged) == 'true') ?  '--privileged="true"' : "";
+	$Repository = $doc->getElementsByTagName( "Repository" )->item(0)->nodeValue;
+	$Mode       = $doc->getElementsByTagName( "Mode" )->item(0)->nodeValue;
+	$Mode       = '--net="'.strtolower($Mode).'"';
+	$BindTime   = $doc->getElementsByTagName( "BindTime" )->item(0)->nodeValue;
+	$BindTime   = (strtolower($BindTime) == "true") ? '"/etc/localtime":"/etc/localtime":ro' : '';
 
-	$cmd = sprintf('/usr/bin/docker run -d %s %s %s %s %s %s %s',$postArray['Name'], $postArray['Mode'], $postArray['Privileged'], implode(' -e ', $postArray['Variables']), 
-		   implode(' -p ', $postArray['Ports']), implode(' -v ', $postArray['Volumes']), $postArray['Repository']);
+	$Ports = array('');
+	foreach($doc->getElementsByTagName('Port') as $port){
+		$ContainerPort = $port->getElementsByTagName( "ContainerPort" )->item(0)->nodeValue;
+		if (! strlen($ContainerPort)){ continue; }
+		$HostPort      = $port->getElementsByTagName( "HostPort" )->item(0)->nodeValue;
+		$Protocol      = $port->getElementsByTagName( "Protocol" )->item(0)->nodeValue;
+		$Ports[]       = sprintf("%s:%s/%s", $HostPort, $ContainerPort, $Protocol);
+	}
+
+	$Volumes = array('');
+	foreach($doc->getElementsByTagName('Volume') as $volume){
+		$ContainerDir = $volume->getElementsByTagName( "ContainerDir" )->item(0)->nodeValue;
+		if (! strlen($ContainerDir)){ continue; }
+		$HostDir      = $volume->getElementsByTagName( "HostDir" )->item(0)->nodeValue;
+		$DirMode      = $volume->getElementsByTagName( "Mode" )->item(0)->nodeValue;
+		$Volumes[]    = sprintf( '"%s":"%s":%s', $HostDir, $ContainerDir, $DirMode);
+	}
+
+	if (strlen($BindTime)) {
+		$Volumes[] = $BindTime;
+	} 
+
+	$Variables = array('');
+	foreach($doc->getElementsByTagName('Variable') as $variable){
+		$VariableName  = $variable->getElementsByTagName( "Name" )->item(0)->nodeValue;
+		if (! strlen($VariableName)){ continue; }
+		$VariableValue = $variable->getElementsByTagName( "Value" )->item(0)->nodeValue;
+		$Variables[]   = sprintf('%s="%s"', $VariableName, $VariableValue);
+	}
+
+	$cmd = sprintf('/usr/bin/docker run -d %s %s %s %s %s %s %s', $Name, $Mode, $Privileged, implode(' -e ', $Variables), 
+		   implode(' -p ', $Ports), implode(' -v ', $Volumes), $Repository);
 	$cmd = preg_replace('/\s+/', ' ', $cmd);
     $_GET['cmd'] = $cmd;
-/*     echo $cmd; */
+    // echo $cmd; 
     include("/usr/local/emhttp/plugins/dockerMan/execWithLog.php");
 
 } else {
@@ -193,25 +178,16 @@ if ($_POST){
 		if(is_file($xmlTemplate)){
 			$doc = new DOMDocument();
 			$doc->load($xmlTemplate);
-			$fileXML = $doc->saveXML();
-			$templateDescription = '';
-			foreach($doc->getElementsByTagName('Description') as $desc){
-				$templateDescription .= preg_replace('/\\\n/', '<br>', $desc->nodeValue);
-			}
-			$Registry = '';
-			foreach($doc->getElementsByTagName('Registry') as $reg){
-				$Registry .= $reg->nodeValue;
-			}
 
-			$fileVariables = xmlToVariables($fileXML);
-			$templateName = $fileVariables['Name'];
-			$templatePrivileged = (strtolower($fileVariables['Privileged']) == 'true') ? 'checked' : "";
-			$templateRepository = $fileVariables['Repository'];
-			$templateMode = $fileVariables['Mode'];
-			$readonly = ($xmlType == 'built_in') ? 'readonly="readonly"' : '';
-			$disabled = ($xmlType == 'built_in') ? 'disabled="disabled"' : '';
+			$templateName         = $doc->getElementsByTagName( "Name" )->item(0)->nodeValue;
+			$templateDescription  = $doc->getElementsByTagName( "Description" )->item(0)->nodeValue;
+			$Registry             = $doc->getElementsByTagName( "Registry" )->item(0)->nodeValue;
+			$templatePrivileged   = (strtolower($doc->getElementsByTagName( "Privileged" )->item(0)->nodeValue) == 'true') ? 'checked' : "";
+			$templateRepository   = $doc->getElementsByTagName( "Repository" )->item(0)->nodeValue;
+			$templateMode         = $doc->getElementsByTagName( "Mode" )->item(0)->nodeValue;;
+			$readonly             = ($xmlType == 'built_in') ? 'readonly="readonly"' : '';
+			$disabled             = ($xmlType == 'built_in') ? 'disabled="disabled"' : '';
 
-			$Ports = $fileVariables['Ports'];
 			$templatePorts = '';
 			$row = '
 					<tr id="portNum%s">
@@ -224,15 +200,18 @@ if ($_POST){
 						</td>
 					</tr>';
 
-			for ($i=0; $i < count($Ports); $i++) { 
-				if(strlen($Ports[$i])){
-					$j = $i + 100;
-					list($HostPort, $ContainerPort) = split(':', $Ports[$i], 2);
-					$templatePorts .= sprintf($row, $j, $ContainerPort, $readonly, $HostPort, $j, $disabled);
+			$i = 1;
+			foreach($doc->getElementsByTagName('Port') as $port){
+				$j = $i + 100;
+				$ContainerPort  = $port->getElementsByTagName( "ContainerPort" )->item(0)->nodeValue;
+				if (! strlen($ContainerPort)){ continue; }
+				$HostPort       = $port->getElementsByTagName( "HostPort" )->item(0)->nodeValue;
+				$Protocol       = $port->getElementsByTagName( "Protocol" )->item(0)->nodeValue;
+				$ContainerPort .= "/".$Protocol;
+				$templatePorts .= sprintf($row, $j, $ContainerPort, $readonly, $HostPort, $j, $disabled);
+				$i++;
 				}
-			}
 
-			$Volumes = $fileVariables['Volumes'];
 			$templateVolumes = '';
 			$row = '
 				<tr id="pathNum%s">
@@ -245,16 +224,19 @@ if ($_POST){
 						<input type="button" value="Remove" onclick="removePath(%s);" %s />
 					</td>
 				</tr>';
-			
-			for ($i=0; $i < count($Volumes); $i++) { 
-				if(strlen($Volumes[$i])){
-					$j = $i + 100;
-					list($HostDir, $ContainerDir) = split(':', preg_replace('/[\"]/', '', $Volumes[$i]), 2);
-					$templateVolumes .= sprintf($row, $j, $ContainerDir, $j, $readonly, $j, $HostDir, $j, $j, $j, $disabled);
-				}
+
+			$i = 1;
+			foreach($doc->getElementsByTagName('Volume') as $volume){
+				$j = $i + 100;
+				$ContainerDir     = $volume->getElementsByTagName( "ContainerDir" )->item(0)->nodeValue;
+				if (! strlen($ContainerDir)){ continue; }
+				$HostDir          = $volume->getElementsByTagName( "HostDir" )->item(0)->nodeValue;
+				$Mode             = $volume->getElementsByTagName( "Mode" )->item(0)->nodeValue;
+				$ContainerDir    .= ":".$Mode;
+				$templateVolumes .= sprintf($row, $j, $ContainerDir, $j, $readonly, $j, $HostDir, $j, $j, $j, $disabled);
+				$i++;
 			}
 
-			$Vars = $fileVariables['Variables'];
 			$templateVariables = '';
 			$row = '
 				<tr id="varNum%s">
@@ -267,12 +249,14 @@ if ($_POST){
 					</td>
 				</tr>';
 
-			for ($i=0; $i < count($Vars); $i++) { 
-				if(strlen($Vars[$i])){
-					$j = $i + 100;
-					list($VarName, $VarValue) = split('=', preg_replace('/[\"]/', '', $Vars[$i]), 2);
-					$templateVariables .= sprintf($row, $j, $VarName, $readonly, $VarValue, $j, $disabled);
-				}
+			$i = 1;
+			foreach($doc->getElementsByTagName('Variable') as $variable){
+				$j = $i + 100;
+				$VariableName       = $variable->getElementsByTagName( "Name" )->item(0)->nodeValue;
+				if (! strlen($VariableName)){ continue; }
+				$VariableValue      = $variable->getElementsByTagName( "Value" )->item(0)->nodeValue;
+				$templateVariables .= sprintf($row, $j, $VariableName, $readonly, $VariableValue, $j, $disabled);
+				$i++;
 			}
 
 		}

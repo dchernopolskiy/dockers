@@ -61,7 +61,7 @@ class DockerClient {
 
 		foreach($json as $obj){
 			$c = array();
-
+			
 			$status = $obj['Status'] ? $obj['Status'] : "None";
 			preg_match("/\b^Up\b/", $status, $matches);
 			$running = $matches ? TRUE : FALSE;

@@ -254,8 +254,9 @@ function addDocker() {
       foreach($all_containers as $ct){ 
         $ports = array();
         foreach ($ct['Ports'] as $p) {
-          $addr = $IP.":".$p['PublicPort'];
-          $ports[] = "<a href=\"http://{$addr}\" target=\"_blank\">{$addr}->".$p['PrivatePort']."/".$p['Type'];
+          $addr = (strlen($p['PublicPort'])) ? $IP.":".$p['PublicPort'] : '';
+          $outFormat = (strlen($addr)) ? $addr.'->'.$p['PrivatePort']."/".$p['Type'] : $p['PrivatePort']."/".$p['Type'];
+          $ports[] = "<a href=\"http://{$addr}\" target=\"_blank\">$outFormat</a>";
         }
 
         ?>
