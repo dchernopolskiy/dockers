@@ -4,22 +4,39 @@
   font-size: 12px;
 }
 </style>
-
+<script type="text/javascript" charset="utf-8">
+var dots = [];
+var span = [];
+function show_Wait(id){
+  span[id] = document.getElementById("wait" + id);
+  dots[id] = setInterval(function() {
+    if ((span[id].innerHTML += '.').length == 18) {
+      span[id].innerHTML = 'Please wait ';
+    }}, 500);
+}
+function stop_Wait(id){
+  span[id].innerHTML = '';
+  clearInterval( dots[id] );
+}
+</script>
 <div style="margin:10;padding:0">
 <?PHP
-
 $command = urldecode(($_GET['cmd']));
+$id = 0;
 foreach (explode(';', $command) as $cmd){
 	$output = array();
 	echo '<fieldset style="margin-top:1px;" class="CMD"><legend/>Command:</legend>';
 	echo "root@localhost:# {$cmd}<br>";
+  echo "<span id=\"wait{$id}\">Please wait </span>";
+  echo "<script>show_Wait({$id});</script>";
 	exec($cmd . ' 2>&1', $output, $retval);
+  echo "<script>stop_Wait($id);</script>";
 	$last200 = array_slice($output, -200, 200, true);
 	echo "<p class=\"logLine\">";
-	foreach($last200 as $line){echo "{$line}<br>"; }
-	echo "</p>";
+	foreach($last200 as $line){if (strlen($line)){echo "{$line}<br>"; } } echo "</p>";
 	echo $retval ?  "The command failed." : "The command finished successfully!";
 	echo "</fieldset><br><br>";
+  $id++;
 }
 
 ?>

@@ -19,9 +19,9 @@ $cfgfile = "/boot/config/docker.cfg";
 
 // Set defaults
 $dockercfg = array(
-	'DOCKER_HOME' => '/mnt/cache/docker',
-	'DOCKER_OPTS' => '--storage-driver=btrfs',
-	'DOCKER_CONTAINERS' => ''
+  'DOCKER_HOME'       => '/mnt/cache/docker',
+  'DOCKER_OPTS'       => '--storage-driver=btrfs',
+  'DOCKER_CONTAINERS' => ''
 );
 
 if (file_exists($cfgfile)) {
@@ -30,9 +30,11 @@ if (file_exists($cfgfile)) {
 
 $docker_image_exists = file_exists($dockercfg['DOCKER_HOME']);
 
-# Update the start/stop configuration
+// Section START.
+// This section contains especific code to allow containers and images to be managed.
+// Update the start/stop configuration
 if ($_POST){
-	$container = trim($_POST['#container']);
+	$container = urldecode(($_POST['#container']));
 	unset($_POST['#container']);
 
 	$new_containers = "";
@@ -59,6 +61,7 @@ if ($_POST){
 include("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 $docker = new DockerClient();
 
+// Grab the server IP address on br0 or eth0 interfaces.
 function serverIP(){
   preg_match_all("/\d:\s+([^\s+]*)\s+inet\s+([^\/]*).+/", shell_exec('ip -o addr') , $matches);
   unset($matches[0]);
@@ -79,6 +82,7 @@ function is_autostart($ct_name, $string){
 	}
 	return FALSE;
 }
+// Section END.
 
 // array must be started since that's where we store domains
 //
@@ -143,7 +147,6 @@ Docker Install Location:
 <?PHP } ?>
 
 <? if (pgrep('docker')) { ?>
-
 <br>
 <style>
   a.log{cursor:zoom-in;}
@@ -151,7 +154,12 @@ Docker Install Location:
 </style>
 
 <script type="text/javascript" charset="utf-8">
-
+$(document).ready(function() {
+  $("#docker_containers").tablesorter( {sortList: [[1,0]]} );
+  $('#docker_containers tr:even').addClass('odd');
+  $("#docker_images").tablesorter( {sortList: [[0,0]]} );
+  $('#docker_images tr:even').addClass('odd');
+});
 function rmContainer(container, image){
   $.prompt("Are you sure?", {
     title: "Removing container: " + container,
@@ -170,7 +178,6 @@ function rmContainer(container, image){
     }
   });
 }
-
 function rmImage(image){
   $.prompt("Are you sure?", {
     title: "Removing image: " + image,
@@ -185,23 +192,28 @@ function rmImage(image){
     }
   });
 }
+function updateContainer(container){
+  $.prompt("Are you sure?", {
+    title: "Updating the container: " + container,
+    buttons: { "Yes, do this!": true, "Cancel" : false },
+    position: { width: 430,},
+    submit: function(e,v,m,f){
+      $.prompt.close();
+      if (v === true){
+        execAddContainer(container, "Updating container: " + container, true);
+      }
+    }
+  });
+}
 
-$(document).ready(function() {
-  $("#docker_containers").tablesorter( {sortList: [[1,0]]} );
-  $('#docker_containers tr:even').addClass('odd');
-  $("#docker_images").tablesorter( {sortList: [[0,0]]} );
-  $('#docker_images tr:even').addClass('odd');
-});
 function autoStart(container){
   document.getElementsByName("#container")[0].value = container;
   document.forms["formAutostart"].submit();
 };
-
 function containerControl(container, action){
   document.getElementById("#cmdStartStop").value = "/usr/bin/docker " + action + " " + container;
   document.forms["formStartStop"].submit();
 };
-
 function execWithLog(cmd, desc, ask, reload) {
   if (ask){
     r = confirm(desc+"\n\nAre you sure?");
@@ -218,7 +230,18 @@ function execWithLog(cmd, desc, ask, reload) {
     }
   });
 }
-
+function execAddContainer(container, desc, reload) {
+  Shadowbox.open({
+    content: "/plugins/dockerMan/CreateDocker.php?updateContainer=" + container,
+    player:'iframe',
+    title: desc,
+    height:((screen.height*2)/3)||0,
+    width:((screen.width*2)/3)||0,
+    options:{
+      onClose: function(){ if (reload){location.reload();}},
+    }
+  });
+}
 function addDocker() {
   reload=true;
   Shadowbox.open({
@@ -235,18 +258,18 @@ function addDocker() {
 </script>
 
 <form markdown="1" id="formAutostart" method="POST" action="" target="progressFrame">
-<input type="hidden" name="#container" value="none" />
-<input type="hidden" name="#file" value="<?=$cfgfile;?>" />
+  <input type="hidden" name="#container" value="none" />
+  <input type="hidden" name="#file" value="<?=$cfgfile;?>" />
 </form>
 
 <form method="POST" id="formStartStop" action="/plugins/webGui/exec.php" target="progressFrame">
-<input type="hidden" id="#cmdStartStop" name="command" value="" />
+  <input type="hidden" id="#cmdStartStop" name="command" value="" />
 </form>
 
 <div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Containers</span><div style="text-align:right;"><a class="exec" onclick="addDocker();"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a> </div></div>
 <table class="tablesorter" id="docker_containers">
   <thead>
-    <tr><th>CONTROL</th><th>NAME</th><th>IMAGE</th><th>COMMAND</th><th>CREATED</th><th>STATUS</th><th>PORTS</th><th>CONTAINER ID</th><th>AUTOSTART</th><th>REMOVE</th></tr>
+    <tr><th>CONTROL</th><th>NAME</th><th>IMAGE</th><th>COMMAND</th><th>CREATED</th><th>STATUS</th><th>PORTS</th><th>CONTAINER ID</th><th>AUTOSTART</th><th>UPDATE</th><th>REMOVE</th></tr>
   </thead>
   <tbody>
     <? $all_containers = $docker->getDockerContainers();
@@ -254,12 +277,15 @@ function addDocker() {
       foreach($all_containers as $ct){ 
         $ports = array();
         foreach ($ct['Ports'] as $p) {
-          $addr = (strlen($p['PublicPort'])) ? $IP.":".$p['PublicPort'] : '';
-          $outFormat = (strlen($addr)) ? $addr.'->'.$p['PrivatePort']."/".$p['Type'] : $p['PrivatePort']."/".$p['Type'];
-          $ports[] = "<a href=\"http://{$addr}\" target=\"_blank\">$outFormat</a>";
+          if (strlen($p['PublicPort'])){
+            $ipAddr    = sprintf("%s:%s", $IP, $p['PublicPort']);
+            $outFormat = sprintf("<a href=\"http://%s\" target=\"_blank\">%s->%s/%s</a>", $ipAddr, $ipAddr, $p['PrivatePort'], $p['Type']);
+          } else {
+            $outFormat = sprintf("%s/%s", $p['PrivatePort'], $p['Type']);
+            }
+          $ports[] = $outFormat;
         }
-
-        ?>
+    ?>
     <tr>
       <td><?
       print $ct["Running"] ? 
@@ -275,6 +301,7 @@ function addDocker() {
       <td><?=$ct['Id'];?></td>
       <? $checked = is_autostart($ct['Name'], $dockercfg['DOCKER_CONTAINERS']) ? "checked" : ""; ?>
       <td><input type="checkbox"  onclick="autoStart('<?=$ct['Name'];?>'); return true;" <?=$checked;?>></td>
+      <td><a class="exec" onclick="updateContainer('<?=$ct["Name"];?>');">Update</a></td>
       <td><a class="exec" onclick="rmContainer('<?=$ct["Name"];?>','<?=$ct["Image"];?>');">Remove</a></td>
     </tr>
     <?};?>
