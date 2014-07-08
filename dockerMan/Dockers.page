@@ -3,11 +3,11 @@ Menu="ExtensionMenu"
 Title="Docker"
 ---
 <link type="text/css" rel="stylesheet" href="/plugins/webGui/style/default_tablesorter.css">
-<script type="text/javascript" src="/plugins/vendor/tablesorter/jquery.tablesorter.min.js"></script>
-<link type="text/css" rel="stylesheet" href="/plugins/vendor/impromptu/jquery-impromptu.min.css">
-<script type="text/javascript" src="/plugins/vendor/impromptu/jquery-impromptu.js"></script>
 <link type="text/css" rel="stylesheet" href="/plugins/dockerMan/jquery-ui/jquery-ui.min.css">
 <link type="text/css" rel="stylesheet" href="/plugins/dockerMan/jquery-ui/jquery-ui.structure.min.css">
+<link rel="stylesheet" type="text/css" href="/plugins/dockerMan/jquery-ui/jquery-ui.theme.min.css">
+
+<script type="text/javascript" src="/plugins/vendor/tablesorter/jquery.tablesorter.min.js"></script>
 <script type="text/javascript" src="/plugins/dockerMan/jquery-ui/jquery-ui.min.js"></script>
 
 <?php
@@ -46,7 +46,7 @@ if ($_POST){
 		foreach( explode(',', $dockercfg["DOCKER_CONTAINERS"]) as $ct) {
 			$ct = trim($ct);
 			if (strlen($ct)){
-				if(preg_match("/\b{$ct}\b/", $container) === 0){
+				if(preg_match("/\b{$ct}\b/", $container) == FALSE){
 					$new_containers = $new_containers.$ct.",";
 				}
 			}
@@ -157,15 +157,19 @@ Docker Install Location:
   a.log{cursor:zoom-in;}
   a.exec{cursor:pointer;}
 </style>
-
+<button id="dialog-link">click</button>
 <script type="text/javascript" charset="utf-8">
-
+$( "#dialog-link" ).click(function( event ) {
+	$( "#dialog" ).dialog( "open" );
+	event.preventDefault();
+});
 function rmContainer(container, image){
   $('#dialog-confirm').prop('title', 'Removing the container: ' + container);
+  $('#dialog-confirm').html('<p>Are you sure?</p>');
   $( "#dialog-confirm" ).dialog({
     resizable: false,
     width: 500,
-    height:120,
+    height:150,
     modal: true,
     buttons: {
       "Just the container": function() {
@@ -187,10 +191,11 @@ function rmContainer(container, image){
 
 function rmImage(image){
   $('#dialog-confirm').prop('title', 'Removing the image: ' + image);
+  $('#dialog-confirm').html('Are you sure?');
   $( "#dialog-confirm" ).dialog({
     resizable: false,
     width: 500,
-    height:120,
+    height:160,
     modal: true,
     buttons: {
       "Just do it!": function() {
@@ -207,6 +212,7 @@ function rmImage(image){
 
 function updateContainer(container){
   $('#dialog-confirm').prop('title', 'Updating the container: ' + container);
+  $('#dialog-confirm').html('<p>Are you sure?</p>');
   $( "#dialog-confirm" ).dialog({
     resizable: false,
     width: 500,
@@ -340,7 +346,7 @@ function addDocker() {
 <div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Containers</span><div style="text-align:right;"><a class="exec" onclick="addDocker();"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a> </div></div>
 <table class="tablesorter" id="docker_containers">
   <thead>
-    <tr><th>CONTROL</th><th>NAME</th><th>IMAGE</th><th>COMMAND</th><th>CREATED</th><th>STATUS</th><th>PORTS</th><th>PATHS</th><th>CONTAINER ID</th><th>AUTOSTART</th><th>UPDATE</th><th>REMOVE</th></tr>
+    <tr><th>CONTROL</th><th>NAME</th><th>IMAGE</th><th>CREATED</th><th>STATUS</th><th>PORTS</th><th>VOLUME MAPPINGS</th><th>CONTAINER ID</th><th>AUTOSTART</th><th>UPDATE</th><th>REMOVE</th></tr>
   </thead>
   <tbody>
     <? $all_containers = $docker->getDockerContainers();
@@ -357,10 +363,12 @@ function addDocker() {
           $ports[] = $outFormat;
         }
       $paths = array();
-      foreach ($ct['Volumes'] as $value) {
-        if (preg_match('/localtime/', $value) == TRUE){ continue; }
-        preg_match('/([^:]+)/', $value, $match);
-        $paths[] = sprintf('<a href="/Shares/Browse?dir=%s" target="_blank">%s</a>', $match[1], $value);
+      if (count($ct['Volumes'])){
+      	foreach ($ct['Volumes'] as $value) {
+      		if (preg_match('/localtime/', $value) == TRUE){ continue; }
+      		preg_match('/([^:]+)/', $value, $match);
+      		$paths[] = sprintf('<a href="/Shares/Browse?dir=%s" target="_blank">%s</a>', $match[1], $value);
+      	}
       }
     ?>
     <tr>
@@ -371,7 +379,6 @@ function addDocker() {
       ?></td>
       <td><?=$ct['Name'];?></td>
       <td><?=$ct['Image'];?></td>
-      <td><?=$ct['Cmd'];?></td>
       <td><?=$ct['Created'];?></td>
       <td><a class="log" onclick="execWithLog('/usr/bin/docker logs <?=$ct['Name'];?>','Log for <?=$ct['Name'];?>', false, false)"><?=$ct['Status'];?></a></td>
       <td><?=implode("<br>", $ports);?></td>

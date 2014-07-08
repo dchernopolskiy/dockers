@@ -223,6 +223,8 @@ if ($_POST){
 			$templateMode         = $doc->getElementsByTagName( "Mode" )->item(0)->nodeValue;;
 			$readonly             = ($xmlType == 'built_in') ? 'readonly="readonly"' : '';
 			$disabled             = ($xmlType == 'built_in') ? 'disabled="disabled"' : '';
+			$templateDescription = preg_replace('/\[/', '<', $templateDescription);
+			$templateDescription = preg_replace('/\]/', '>', $templateDescription);
 
 			$templatePorts = '';
 			$row = '

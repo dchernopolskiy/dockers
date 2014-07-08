@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Container>
   <Name>CrashPlan</Name>
-  <Description>With unlimited, set-it-and-get-at-it backup to multiple destinations, plus anywhere, anytime access to ALL your files, CrashPlan is the simplest, surest way to protect your digital life</Description>
+  <Description>
+    With unlimited, set-it-and-get-at-it backup to multiple destinations, plus anywhere, anytime access to ALL your files, CrashPlan is the simplest, surest way to protect your digital life.[br][br]
+    [b][span style='color: #E80000;']Directions:[/span][/b][br]
+    [b]/config[/b] : this path is where the configuration of CrashPlan is stored to.[br]
+    [b]/data[/b] : normally this should point to '/mnt/user', but you can set this to any directory you wish to backup. You may add another paths too.
+  </Description>
   <Registry>https://registry.hub.docker.com/u/gfjardim/crashplan/</Registry>
   <Repository>gfjardim/crashplan</Repository>
   <BindTime>true</BindTime>

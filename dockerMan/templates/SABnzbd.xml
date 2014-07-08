@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Container>
   <Name>SABnzbd</Name>
-  <Description>SABnzbd is an Open Source Binary Newsreader written in Python. SABnzbd makes Usenet as simple and streamlined as possible by automating everything we can. All you have to do is add an .nzb. SABnzbd takes over from there, where it will be automatically downloaded, verified, repaired, extracted and filed away with zero human interaction.</Description>
+  <Description>
+    SABnzbd is an Open Source Binary Newsreader written in Python. SABnzbd makes Usenet as simple and streamlined as possible by automating everything we can. All you have to do is add an .nzb. SABnzbd takes over from there, where it will be automatically downloaded, verified, repaired, extracted and filed away with zero human interaction.[br][br]
+    [b][span style='color: #E80000;']Directions:[/span][/b][br]
+    [b]/config[/b] : this path is where SABnzbd store it's configuration.[br]
+    [b]/downloads[/b] : in this path, SABnzbd stores the downloaded files.
+  </Description>
   <Registry>https://registry.hub.docker.com/u/needo/sabnzbd/</Registry>
   <Repository>needo/sabnzbd</Repository>
   <BindTime>true</BindTime>
