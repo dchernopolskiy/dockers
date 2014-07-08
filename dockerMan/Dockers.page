@@ -340,7 +340,7 @@ function addDocker() {
 <div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Containers</span><div style="text-align:right;"><a class="exec" onclick="addDocker();"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a> </div></div>
 <table class="tablesorter" id="docker_containers">
   <thead>
-    <tr><th>CONTROL</th><th>NAME</th><th>IMAGE</th><th>COMMAND</th><th>CREATED</th><th>STATUS</th><th>PORTS</th><th>CONTAINER ID</th><th>AUTOSTART</th><th>UPDATE</th><th>REMOVE</th></tr>
+    <tr><th>CONTROL</th><th>NAME</th><th>IMAGE</th><th>COMMAND</th><th>CREATED</th><th>STATUS</th><th>PORTS</th><th>PATHS</th><th>CONTAINER ID</th><th>AUTOSTART</th><th>UPDATE</th><th>REMOVE</th></tr>
   </thead>
   <tbody>
     <? $all_containers = $docker->getDockerContainers();
@@ -356,6 +356,12 @@ function addDocker() {
             }
           $ports[] = $outFormat;
         }
+      $paths = array();
+      foreach ($ct['Volumes'] as $value) {
+        if (preg_match('/localtime/', $value) == TRUE){ continue; }
+        preg_match('/([^:]+)/', $value, $match);
+        $paths[] = sprintf('<a href="/Shares/Browse?dir=%s" target="_blank">%s</a>', $match[1], $value);
+      }
     ?>
     <tr>
       <td><?
@@ -369,6 +375,7 @@ function addDocker() {
       <td><?=$ct['Created'];?></td>
       <td><a class="log" onclick="execWithLog('/usr/bin/docker logs <?=$ct['Name'];?>','Log for <?=$ct['Name'];?>', false, false)"><?=$ct['Status'];?></a></td>
       <td><?=implode("<br>", $ports);?></td>
+      <td><?=implode("<br>", $paths);?></td>
       <td><?=$ct['Id'];?></td>
       <? $checked = is_autostart($ct['Name'], $dockercfg['DOCKER_CONTAINERS']) ? "checked" : ""; ?>
       <td><input type="checkbox"  onclick="autoStart('<?=$ct['Name'];?>'); return true;" <?=$checked;?>></td>

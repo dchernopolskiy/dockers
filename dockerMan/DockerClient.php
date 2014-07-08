@@ -1,4 +1,9 @@
 <?php
+function debugLog($var){
+	echo "<pre>";
+	print_r($var);
+	echo "</pre>";
+}
 
 class DockerClient {
 
@@ -55,27 +60,33 @@ class DockerClient {
 		return $json;
 	}
 
+	private function getContainerDetails($id){
+		$json = $this->getDockerJSON("/containers/{$id}/json");
+		return $json;
+	}
+
 	public function getDockerContainers(){
 		$containers = array();
 		$json = $this->getDockerJSON("/containers/json?all=1");
 
 		foreach($json as $obj){
 			$c = array();
-			
-			$status = $obj['Status'] ? $obj['Status'] : "None";
+			$details = $this->getContainerDetails($obj['Id']);
+			$status  = $obj['Status'] ? $obj['Status'] : "None";
 			preg_match("/\b^Up\b/", $status, $matches);
 			$running = $matches ? TRUE : FALSE;
 
-			$c["Image"]     = $obj['Image'];
-			$c["Name"]      = substr($obj['Names'][0], 1);
-			$c["Status"]    = $status;
-			$c["Running"]   = $running;
-			$c["Cmd"]       = $obj['Command'];
-			$c["Id"]        = substr($obj['Id'],0,12);
-			$c["Created"]   = $this->humanTiming($obj['Created']);
-			$c["Ports"]     = $obj['Ports'];
+			$c["Image"]   = $obj['Image'];
+			$c["Name"]    = substr($obj['Names'][0], 1);
+			$c["Status"]  = $status;
+			$c["Running"] = $running;
+			$c["Cmd"]     = $obj['Command'];
+			$c["Id"]      = substr($obj['Id'],0,12);
+			$c['Volumes'] = $details[0]["HostConfig"]['Binds'];
+			$c["Created"] = $this->humanTiming($obj['Created']);
+			$c["Ports"]   = $obj['Ports'];
 			
-			$containers[]   = $c;
+			$containers[] = $c;
 		}
 		return $containers;
 	}
@@ -90,7 +101,7 @@ class DockerClient {
 			$c = array();
 			$tags = array();
 			foreach($obj['RepoTags'] as $t){
-				$tags[] = $t;
+				$tags[] = htmlentities($t);
 			}
 			
 			$c["Created"]      = $this->humanTiming($obj['Created']);//date('Y-m-d H:i:s', $obj['Created']);
