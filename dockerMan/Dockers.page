@@ -157,12 +157,7 @@ Docker Install Location:
   a.log{cursor:zoom-in;}
   a.exec{cursor:pointer;}
 </style>
-<button id="dialog-link">click</button>
 <script type="text/javascript" charset="utf-8">
-$( "#dialog-link" ).click(function( event ) {
-	$( "#dialog" ).dialog( "open" );
-	event.preventDefault();
-});
 function rmContainer(container, image){
   $('#dialog-confirm').prop('title', 'Removing the container: ' + container);
   $('#dialog-confirm').html('<p>Are you sure?</p>');
@@ -236,52 +231,6 @@ $(document).ready(function() {
   $("#docker_images").tablesorter( {sortList: [[0,0]]} );
   $('#docker_images tr:even').addClass('odd');
 });
-// function rmContainer(container, image){
-//   $.prompt("Are you sure?", {
-//     title: "Removing container: " + container,
-//     buttons: { "Just the container" : "ct", "Container and Image": "ct_im", "Cancel" : false },
-//     position: { width: 430,},
-//     submit: function(e,v,m,f){
-
-//       $.prompt.close();
-//       if (v == "ct_im"){
-//         var cmd = '/usr/bin/docker rm -f ' + container + '; docker rmi ' + image;
-//         execWithLog(cmd ,'Removing container: ' + container, false, true);
-//       } else if (v == "ct"){
-//         var cmd = '/usr/bin/docker rm -f ' + container;
-//         execWithLog(cmd ,'Removing container: ' + container, false, true);
-//       }
-//     }
-//   });
-// }
-// function rmImage(image){
-//   $.prompt("Are you sure?", {
-//     title: "Removing image: " + image,
-//     buttons: { "Yes, do this!": true, "Cancel" : false },
-//     position: { width: 430,},
-//     submit: function(e,v,m,f){
-//       $.prompt.close();
-//       if (v === true){
-//         var cmd = '/usr/bin/docker rmi ' + image;
-//         execWithLog(cmd ,'Removing image: ' + image, false, true);
-//       }
-//     }
-//   });
-// }
-// function updateContainer(container){
-//   $.prompt("Are you sure?", {
-//     title: "Updating the container: " + container,
-//     buttons: { "Yes, do this!": true, "Cancel" : false },
-//     position: { width: 430,},
-//     submit: function(e,v,m,f){
-//       e.preventDefault(); 
-//       $.prompt.close();
-//       if (v === true){
-//         execAddContainer(container, "Updating container: " + container, true);
-//       }
-//     }
-//   });
-// }
 
 function autoStart(container){
   document.getElementsByName("#container")[0].value = container;
