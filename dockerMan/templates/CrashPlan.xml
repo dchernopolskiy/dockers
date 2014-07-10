@@ -18,7 +18,7 @@
   <Environment/>
   <Data>
     <Volume>
-      <HostDir></HostDir>
+      <HostDir>/mnt/user/appdata/crashplan</HostDir>
       <ContainerDir>/config</ContainerDir>
       <Mode>rw</Mode>
     </Volume>

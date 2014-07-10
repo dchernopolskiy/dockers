@@ -279,7 +279,7 @@ function addDocker() {
     player:'iframe',
     title: 'Create Container:',
     height:((screen.height*2)/3)||0,
-    width:'670px',
+    width:'770px',
     options:{
       onClose: function(){ if (reload){location.reload();}},
     }

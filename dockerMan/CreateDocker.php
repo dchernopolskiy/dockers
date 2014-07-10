@@ -8,7 +8,7 @@ $allXmlDir = array(
 
 function debugLog($var){
 	echo "<pre>";
-	print_r($var);
+	print_r(htmlentities($var));
 	echo "</pre>";
 }
 
@@ -125,10 +125,7 @@ function postToXML($post, $setOwnership = FALSE){
 	$Mode->appendChild($doc->createTextNode(strtolower($post["NetworkType"])));
 
     for ($i = 0; $i < count($post["hostPort"]); $i++){
-    	$protocol = (strpos($post["containerPort"][$i], '/udp')) ? 'udp' : 'tcp';
-    	$post["containerPort"][$i] = preg_replace('/\/tcp|\/udp/', '', $post["containerPort"][$i]);
-    	$post["HostPort"][$i] = preg_replace('/\/[tcup]*/', '', $post["HostPort"][$i]);
-
+    	$protocol = $post["portProtocol"][$i];
     	$Port = $Publish->appendChild($doc->createElement('Port'));
     	$HostPort = $Port->appendChild($doc->createElement('HostPort'));
      	$ContainerPort = $Port->appendChild($doc->createElement('ContainerPort'));
@@ -148,8 +145,7 @@ function postToXML($post, $setOwnership = FALSE){
 
     for ($i = 0; $i < count($post["hostPath"]); $i++){
     	if (! strlen($post["containerPath"][$i])){continue; }
-    	$tmpMode = (strpos($post["containerPath"][$i], ':ro')) ? 'ro' : 'rw';
-    	$post["containerPath"][$i] = preg_replace('/:[row]+$/', '', $post["containerPath"][$i]);
+    	$tmpMode = $post["hostWritable"][$i];
     	if ($setOwnership){
     		prepareDir($post["hostPath"][$i]);
     	}
@@ -167,7 +163,7 @@ function postToXML($post, $setOwnership = FALSE){
 if ($_POST){
 	//debugLog($_POST);
     $postXML = postToXML($_POST, TRUE);
-    //debugLog($postXML);
+    // debugLog($postXML);
 
     // Get the command line 
     list($cmd, $Name, $Repository) = xmlToCommand($postXML);
@@ -234,6 +230,14 @@ if ($_POST){
 						</td>
 						<td>
 							<input type="text" name="hostPort[]" value="%s" class="textPort" title="Set the port you use to interact with the app.">
+						</td>
+						<td>
+							<select name="portProtocol[]">
+								<option value="tcp">tcp</option>
+								<option value="udp" %s>udp</option>
+							</select>
+						</td>
+						<td>
 							<input type="button" value="Remove" onclick="removePort(%s);" %s>
 						</td>
 					</tr>';
@@ -245,8 +249,8 @@ if ($_POST){
 				if (! strlen($ContainerPort)){ continue; }
 				$HostPort       = $port->getElementsByTagName( "HostPort" )->item(0)->nodeValue;
 				$Protocol       = $port->getElementsByTagName( "Protocol" )->item(0)->nodeValue;
-				$ContainerPort .= "/".$Protocol;
-				$templatePorts .= sprintf($row, $j, $ContainerPort, $readonly, $HostPort, $j, $disabled);
+				$select = ($Protocol == 'udp') ? 'selected' : '';
+				$templatePorts .= sprintf($row, $j, $ContainerPort, $readonly, $HostPort, $select, $j, $disabled);
 				$i++;
 				}
 
@@ -259,6 +263,14 @@ if ($_POST){
 					<td>
 						<input type="text" id="hostPath%s" name="hostPath[]" value="%s" class="textPath" onclick="toggleBrowser(%s);" title="The directory in your array the app have access to. Ex: /mnt/user/Movies"/>
 						<div id="fileTree%s" class="fileTree"></div>
+					</td>
+					<td>
+						<select name="hostWritable[]">
+							<option value="rw">Read/Write</option>
+							<option value="ro" %s>Read Only</option>
+						</select>
+					</td>
+					<td>
 						<input type="button" value="Remove" onclick="removePath(%s);" %s />
 					</td>
 				</tr>';
@@ -270,8 +282,8 @@ if ($_POST){
 				if (! strlen($ContainerDir)){ continue; }
 				$HostDir          = $volume->getElementsByTagName( "HostDir" )->item(0)->nodeValue;
 				$Mode             = $volume->getElementsByTagName( "Mode" )->item(0)->nodeValue;
-				$ContainerDir    .= ":".$Mode;
-				$templateVolumes .= sprintf($row, $j, $ContainerDir, $j, $readonly, $j, $HostDir, $j, $j, $j, $disabled);
+				$Mode             = ($Mode == "ro") ? "selected" : '';
+				$templateVolumes .= sprintf($row, $j, $ContainerDir, $j, $readonly, $j, $HostDir, $j, $j, $Mode, $j, $disabled);
 				$i++;
 			}
 
@@ -308,6 +320,7 @@ if ($_POST){
 <link type="text/css" rel="stylesheet" href="/plugins/webGui/style/default_layout.css">
 <style type="text/css">
 	body {
+		width: 750px; 
 		margin: 10px;
 		font-size: 14px;
 	}
@@ -340,10 +353,13 @@ if ($_POST){
 		width: 100px;
 	}
 	table.pathTab{
-		width: 650px;
+		width: 700px;
 	}
 	table.portRows{
-		width: 320px;
+		width: 400px;
+	}
+	table.envTab{
+		width: 600px;
 	}
 	table.Preferences{
 		width: 100%;
@@ -451,6 +467,7 @@ if ($_POST){
 				<tr>
 					<td>Container volume:</td>
 					<td>Host path:</td>
+					<td>Mode:</td>
 				</tr>
 			</thead>
 
@@ -462,6 +479,14 @@ if ($_POST){
 					<td>
 						<input type="text" id="hostPath1" name="hostPath[]" class="textPath" autocomplete="off" onclick="toggleBrowser(1);" title="The directory in your array the app have access to. Ex: /mnt/user/Movies">
 						<div id="fileTree1" class="fileTree"></div>
+					</td>
+					<td>
+						<select id="hostWritable1" name="hostWritable[]">
+							<option value="rw" selected="selected">Read/Write</option>
+							<option value="ro">Read Only</option>
+						</select>
+					</td>
+					<td>
 						<input onclick="addPath(this.form);" type="button" value="Add Path" class="btn">
 					</td>
 				</tr>
@@ -478,6 +503,7 @@ if ($_POST){
 					<tr>
 						<td>Container port:</td>
 						<td>Host port:</td>
+						<td>Protocol:</td>
 					</tr>
 
 					<tr>
@@ -486,6 +512,14 @@ if ($_POST){
 						</td>
 						<td>
 							<input type="text" id="hostPort1" name="hostPort[]" class="textPort" title="Set the port you use to interact with the app.">
+						</td>
+						<td>
+							<select id="portProtocol1" name="portProtocol[]">
+								<option value="tcp" selected="selected">tcp</option>
+								<option value="udp">udp</option>
+							</select>
+						</td>
+						<td>
 							<input onclick="addPort(this.form);" type="button" value="Add port" class="btn">
 						</td>
 					</tr>
@@ -498,7 +532,7 @@ if ($_POST){
 			<span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Environment Variables</span>
 		</div>
 
-		<table id="envRows" class="pathTab">
+		<table id="envRows" class="envTab">
 			<thead>
 				<tr>
 					<td>Variable Name:</td>

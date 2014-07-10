@@ -17,15 +17,7 @@ if (!String.prototype.format) {
   };
 }
 
-
 $(document).ready(function() {
-	// $("#filePath").click(function() {
-	// 	if (brOpen){
-	// 		hideBrowser();brOpen = false;
-	// 	}else{
-	// 		showBrowser();brOpen = true;
-	// 	}
-	// });
 	if ($("#NetworkType").val() != 'bridge') {
 		$("#titlePort").css({'display': "none"});
 	};
@@ -85,6 +77,14 @@ function addPort(frm) {
 	portNum++;
 	var hostPort = $("#hostPort1");
 	var containerPort = $("#containerPort1");
+	var portProtocol = $("#portProtocol1");
+
+	if (portProtocol.val() == "udp"){
+		var select = "selected";
+	} else {
+		var select = "";
+	}
+
 	var row = [
 	'<tr id="portNum{0}">',
 	'<td>',
@@ -92,14 +92,23 @@ function addPort(frm) {
 	'</td>',
 	'<td>',
 	'<input type="text" name="hostPort[]" value="{1}" class="textPort" title="Set the port you use to interact with the app.">',
+	'</td>',
+	'<td>',
+	'<select name="portProtocol[]">',
+	'<option value="tcp">tcp</option>',
+	'<option value="udp" {3}>udp</option>',
+	'</select>',
+	'</td>',
+	'<td>',
 	'<input type="button" value="Remove" onclick="removePort({0});">',
 	'</td>',
 	'</tr>',
 	].join('');
 
-	$('#portRows').append(row.format(portNum, hostPort.val(), containerPort.val()));
+	$('#portRows').append(row.format(portNum, hostPort.val(), containerPort.val(), select));
 	hostPort.val('');
 	containerPort.val('');
+	portProtocol.val('tcp');
 }
 
 function removePort(rnum) {
@@ -108,8 +117,16 @@ function removePort(rnum) {
 
 function addPath(frm) {
 	pathNum++;
+	
 	var hostPath = $("#hostPath1");
 	var containerPath = $("#containerPath1");
+	var hostWritable = $("#hostWritable1");
+
+	if (hostWritable.val() == "ro"){
+		var select = "selected";
+	} else {
+		var select = "";
+	}
 
 	var row = [
 	'<tr id="pathNum{0}">',
@@ -119,14 +136,23 @@ function addPath(frm) {
 	'<td>',
 	'<input type="text" id="hostPath{0}" name="hostPath[]" value="{1}" class="textPath"  onclick="toggleBrowser({0});" title="The directory in your array the app have access to. Ex: /mnt/user/Movies"/>',
 	'<div id="fileTree{0}" class="fileTree"></div>',
+	'</td>',
+	'<td>',
+	'<select name="hostWritable[]">',
+	'<option value="rw">Read/Write</option>',
+	'<option value="ro" {3}>Read Only</option>',
+	'</select>',
+	'</td>',
+	'<td>',
 	'<input type="button" value="Remove" onclick="removePath({0});"></td></tr>',
 	'</td>',
 	'</tr>',
 	].join('');
-
-	$('#pathRows tbody').append(row.format(pathNum, hostPath.val(), containerPath.val()));
+	
+	$('#pathRows tbody').append(row.format(pathNum, hostPath.val(), containerPath.val(), select));
 	hostPath.val('');
 	containerPath.val('');
+	hostWritable.val('rw');
 }
 
 function removePath(rnum) {

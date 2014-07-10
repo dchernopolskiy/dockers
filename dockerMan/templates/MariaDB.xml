@@ -23,7 +23,7 @@
   <Environment/>
   <Data>
     <Volume>
-      <HostDir></HostDir>
+      <HostDir>/mnt/user/appdata/mariadb</HostDir>
       <ContainerDir>/db</ContainerDir>
       <Mode>rw</Mode>
     </Volume>

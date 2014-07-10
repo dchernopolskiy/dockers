@@ -28,7 +28,7 @@
   </Environment>
   <Data>
     <Volume>
-      <HostDir></HostDir>
+      <HostDir>/mnt/user/appdata/owncloud</HostDir>
       <ContainerDir>/var/www/owncloud/data</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
