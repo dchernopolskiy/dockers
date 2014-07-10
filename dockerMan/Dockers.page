@@ -79,13 +79,17 @@ function serverIP(){
   return $IP;
 }
 
-function is_autostart($ct_name, $string){
-	foreach( explode(',', $string) as $x) {
-		if ( $x == $ct_name){
-			return TRUE;
-		}
-	}
-	return FALSE;
+function is_autostart($ct_name){
+  global $dockercfg;
+  $allAutoStart = explode(',', $dockercfg["DOCKER_CONTAINERS"]);
+  if (count($allAutoStart)){
+   foreach($allAutoStart  as $x) {
+    if ( $x == $ct_name){
+     return TRUE;
+   }
+ }
+}
+return FALSE;
 }
 // Section END.
 
@@ -301,6 +305,7 @@ function addDocker() {
     <? $all_containers = $docker->getDockerContainers();
       $IP = serverIP();
       foreach($all_containers as $ct){ 
+        $autostart = is_autostart($ct['Name']) ? "checked" : "";
         $ports = array();
         foreach ($ct['Ports'] as $p) {
           if (strlen($p['PublicPort'])){
@@ -333,8 +338,8 @@ function addDocker() {
       <td><?=implode("<br>", $ports);?></td>
       <td><?=implode("<br>", $paths);?></td>
       <td><?=$ct['Id'];?></td>
-      <? $checked = is_autostart($ct['Name'], $dockercfg['DOCKER_CONTAINERS']) ? "checked" : ""; ?>
-      <td><input type="checkbox"  onclick="autoStart('<?=$ct['Name'];?>'); return true;" <?=$checked;?>></td>
+      <?  ?>
+      <td><input type="checkbox"  onclick="autoStart('<?=$ct['Name'];?>'); return true;" <?=$autostart;?>></td>
       <td><a class="exec" onclick="updateContainer('<?=$ct["Name"];?>');">Update</a></td>
       <td><a class="exec" onclick="rmContainer('<?=$ct["Name"];?>','<?=$ct["Image"];?>');">Remove</a></td>
     </tr>

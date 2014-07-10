@@ -2,8 +2,8 @@
 $relPath = '/usr/local/emhttp/plugins/dockerMan';
 
 $allXmlDir = array(
-	 'user' => '/boot/config/plugins/Docker', 
 	 'built_in' => $relPath."/templates",
+	 'user' => '/boot/config/plugins/Docker', 
 	 );
 
 function debugLog($var){
