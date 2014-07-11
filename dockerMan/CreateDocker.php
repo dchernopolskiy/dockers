@@ -2,8 +2,8 @@
 $relPath = '/usr/local/emhttp/plugins/dockerMan';
 
 $allXmlDir = array(
-	 'built_in' => $relPath."/templates",
 	 'user' => '/boot/config/plugins/Docker', 
+	 'built_in' => $relPath."/templates",
 	 );
 
 function debugLog($var){
@@ -39,7 +39,7 @@ function getTemplates(){
 function prepareDir($dir){
 	if (strlen($dir)){
 		if (!is_dir($dir)){
-			echo " Setting the ownership to nobody.";
+			mkdir($dir, 0770, true);
 			chown($dir, 'nobody');
 			chgrp($dir, 'users');
 			sleep(1);

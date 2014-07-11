@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container>
+  <Name>XBMCServer</Name>
+  <Description>
+    This will allow you to serve files through the XBMC UPnP Library to your UPnP client/players (such as Xbmc or Chromecast). Docker is used to compile and run the latest headless version of XBMC Gotham/Frodo. This also includes some custom patches that will fix crashes. See the FAQ section for details.
+    [b][span style='color: #E80000;']Directions:[/span][/b][br]
+    [b]/mnt/user/appdata/XBMCServer[/b] : in this path, XBMC wil look for it's userdata. Please refer to the container Home Page to further instructions.[br]
+  </Description>
+  <Registry>
+    https://registry.hub.docker.com/u/wernerb/docker-xbmc-server/
+  </Registry>
+  <Repository>wernerb/docker-xbmc-server:gotham</Repository>
+  <BindTime>true</BindTime>
+  <Privileged>true</Privileged>
+  <Environment/>
+  <Networking>
+    <Mode>host</Mode>
+    <Publish/>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/XBMCServer</HostDir>
+      <ContainerDir>/opt/xbmc-server/portable_data</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+</Container>
