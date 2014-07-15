@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dockerMan">
 <!ENTITY author    "gfjardim">
-<!ENTITY version   "2014.07.10-1">
+<!ENTITY version   "2014.07.15">
 <!ENTITY category  "Core Functionality">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/gfjardim/dockers/dockerMan/dockerMan/dockerMan.plg">
 ]>
