@@ -194,7 +194,7 @@ function rmImage(image){
   $( "#dialog-confirm" ).dialog({
     resizable: false,
     width: 500,
-    height:160,
+    height:150,
     modal: true,
     buttons: {
       "Just do it!": function() {
@@ -215,7 +215,7 @@ function updateContainer(container){
   $( "#dialog-confirm" ).dialog({
     resizable: false,
     width: 500,
-    height:120,
+    height:150,
     modal: true,
     buttons: {
       "Just do it!": function() {
