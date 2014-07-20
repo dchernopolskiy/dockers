@@ -23,7 +23,7 @@
   <Environment>
     <Variable>
       <Name>SUBJECT</Name>
-      <Value>/C=COUNTRY/ST=STATE/L=City/O=Organization/OU=Organization Unit/CN=yourhome.com</Value>
+      <Value>/C=US/ST=CA/L=City/O=Organization/OU=Organization Unit/CN=yourhome.com</Value>
     </Variable>
   </Environment>
   <Data>
