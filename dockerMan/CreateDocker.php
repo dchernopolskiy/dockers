@@ -205,7 +205,10 @@ if ($_POST){
 	}
 
 } else {
-	if($_GET['xmlTemplate']){
+	if($_GET['rmTemplate']){
+		unlink($_GET['rmTemplate']);
+
+	} else if($_GET['xmlTemplate']){
 		list($xmlType, $xmlTemplate) = split(':', urldecode($_GET['xmlTemplate']));
 		if(is_file($xmlTemplate)){
 			$doc = new DOMDocument();
@@ -384,6 +387,7 @@ if ($_POST){
 </style>
 <form method="GET" id="formTemplate">
 	<input type="hidden" id="#xmlTemplate" name="xmlTemplate" value="" />
+	<input type="hidden" id="#rmTemplate" name="rmTemplate" value="" />
 </form>
 
 <div id="canvas" class="canvas" style="z-index:1;">
@@ -399,10 +403,18 @@ if ($_POST){
 				<td >
 					<select id="TemplateSelect" size="1">
 						<option value="" selected>Select a template</option>
-						<? foreach (getTemplates() as $value) { 
+						<? 
+						$rmadd = '';
+						foreach (getTemplates() as $value) { 
 							$selected = (isset($xmlTemplate) && $value['path'] == $xmlTemplate) ? ' selected ' : '';
-						echo "\t\t\t\t\t\t<option value=\"" . $value['type'] . ":" . $value['path'] . "\" {$selected} >" . $value['name'] . "</option>\n";};?>
+							if (strlen($selected) && $value['type'] == 'user' ){ $rmadd = $value['path']; }
+							echo "\t\t\t\t\t\t<option value=\"" . $value['type'] . ":" . $value['path'] . "\" {$selected} >" . $value['name'] . "</option>\n";
+						};
+						?>
 					</select>
+					<? if (strlen($rmadd)) {
+						echo "<a onclick=\"rmTemplate('$rmadd');\" style=\"cursor:pointer;\"><img src=\"/plugins/dockerMan/remove.png\" title=\"$rmadd\" width=\"30px\"></a>";
+					};?>
 				</td>
 			</tr>
 			<?if(isset($templateDescription) && strlen($templateDescription)){?>

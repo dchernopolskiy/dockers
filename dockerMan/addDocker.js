@@ -36,7 +36,13 @@ $(document).ready(function() {
 	}
 	});
 });
-
+function rmTemplate(tmpl){
+	var name = tmpl.split(/[\/]+/).pop();
+	r = confirm("Removing template:  " + name + "\n\nAre you shure?");
+	if (r == false){return;}
+	document.getElementById("#rmTemplate").value = tmpl;
+	document.forms["formTemplate"].submit();
+}
 function toggleBrowser(N) {
 	if(typeof brOpen[N] == 'undefined') {
 		brOpen[N] = false;
