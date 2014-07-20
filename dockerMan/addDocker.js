@@ -38,7 +38,7 @@ $(document).ready(function() {
 });
 function rmTemplate(tmpl){
 	var name = tmpl.split(/[\/]+/).pop();
-	r = confirm("Removing template:  " + name + "\n\nAre you shure?");
+	r = confirm("Removing template:  " + name + "\n\nAre you sure?");
 	if (r == false){return;}
 	document.getElementById("#rmTemplate").value = tmpl;
 	document.forms["formTemplate"].submit();
