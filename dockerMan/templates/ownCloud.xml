@@ -4,7 +4,8 @@
   <Description>
     ownCloud gives you universal access to your files through a web interface or WebDAV. It also provides a platform to easily view and sync your contacts, calendars and bookmarks across all your devices and enables basic editing right on the web.[br][br]
     [b][span style='color: #E80000;']Directions:[/span][/b][br]
-    [b]/var/www/owncloud/data[/b] : this path is where ownCloud data is stored to.
+    [b]/var/www/owncloud/data[/b] : this path is where ownCloud data is stored to.[br][br]
+    [b]Tip:[/b] Set EDGE variable to '1' if you want to always run the last version.
   </Description>
   <Registry>https://registry.hub.docker.com/u/gfjardim/owncloud/</Registry>
   <Repository>gfjardim/owncloud</Repository>
@@ -24,6 +25,10 @@
     <Variable>
       <Name>SUBJECT</Name>
       <Value>/C=US/ST=CA/L=City/O=Organization/OU=Organization Unit/CN=yourhome.com</Value>
+    </Variable>
+    <Variable>
+      <Name>EDGE</Name>
+      <Value>0</Value>
     </Variable>
   </Environment>
   <Data>
