@@ -8,7 +8,9 @@
     [b]/downloads[/b] : in this path Deluge will store the downloaded files.[br][br]
     [b]Tip:[/b] Don't change ports 58846 (daemon) and 8112 (webgui) ports unless necessary. Port 59981 is an example of income port, you can change it at will. This port should be NAT forwarded in your router.
   </Description>
-  <Registry></Registry>
+  <Registry>
+    https://registry.hub.docker.com/u/needo/deluge/
+  </Registry>
   <Repository>needo/deluge</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>
