@@ -60,6 +60,48 @@ class DockerClient {
 		return $json;
 	}
 
+	private function postDockerJSON($url){
+		$fp = stream_socket_client('unix:///var/run/docker.sock', $errno, $errstr);
+		$out="POST {$url} HTTP/1.1\r\nConnection: Close\r\n\r\n";
+		fwrite($fp, $out);
+		$id = '';
+		$oldpercentage = '';
+		while (!feof($fp)) {
+			$o = fgets($fp, 5000);
+			$data .= $o;
+			$js = json_decode( $o, true );
+			if (is_array($js)) {
+				$nid = $js['id'];
+				if ($id != $nid){
+					$id = $nid;
+					echo "<br>$id: " . $js['status'] . '<br>';
+				}
+				if (array_key_exists('progressDetail', $js)){
+					if ($js['progressDetail']['total']){
+						$percentage = round(($js['progressDetail']['current'] / $js['progressDetail']['total']) * 100);
+						if ($percentage % 10 == 0) {
+							$percentage = "$percentage% ";
+						} else {
+							$percentage = '';
+						}
+						if ( $percentage != $oldpercentage){
+							echo "$percentage";
+						}
+						$oldpercentage = $percentage;
+					}
+				}
+			}
+		}
+		fclose($fp);
+		$data = $this->unchunk($data);
+		preg_match_all('/[^\{]*(\{.*\})/',$data, $matches);
+		$json = array();
+		foreach($matches[1] as $x){
+			$json[] = json_decode( $x, true );
+		}
+		return $json;
+	}
+
 	private function getContainerDetails($id){
 		$json = $this->getDockerJSON("/containers/{$id}/json");
 		return $json;
@@ -89,6 +131,14 @@ class DockerClient {
 			$containers[] = $c;
 		}
 		return $containers;
+	}
+
+	public function pullImage($image){
+		$in = "/images/" . addslashes($image) . "/pull";
+		$in = "/images/create?fromImage=$image";
+		$out = $this->postDockerJSON($in);
+		debugLog($out);
+
 	}
 
 	public function getDockerImages(){
