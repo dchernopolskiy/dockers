@@ -272,12 +272,19 @@ function execAddContainer(container, desc, reload) {
     }
   });
 }
-function addDocker() {
+function addDocker(container=None) {
   reload=true;
+  if (container) {
+    var title = 'Edit container: ' + container;
+    op = "?xmlTemplate=user:/boot/config/plugins/Docker/my-" + container + ".xml";
+  } else {
+    var title = 'Create Container:';
+    op = "";
+  }
   Shadowbox.open({
-    content: "/plugins/dockerMan/CreateDocker.php",
+    content: "/plugins/dockerMan/CreateDocker.php" + op,
     player:'iframe',
-    title: 'Create Container:',
+    title: title,
     height:((screen.height*2)/3)||0,
     width:'770px',
     options:{
@@ -331,7 +338,7 @@ function addDocker() {
       "<button style=\"color:#FF2400;font-weight:bold;width: 4em;\" onclick=\"containerControl('".$ct['Name']."','stop'); return true;\">Stop</button>":
       "<button style=\"color:#52D017;font-weight:bold;width: 4em;\" onclick=\"containerControl('".$ct['Name']."','start'); return true;\">Start</button>";
       ?></td>
-      <td><?=$ct['Name'];?></td>
+      <td><a class="exec" onclick="addDocker('<?=$ct['Name'];?>');"><?=$ct['Name'];?></a></td>
       <td><?=$ct['Image'];?></td>
       <td><?=$ct['Created'];?></td>
       <td><a class="log" onclick="execWithLog('/usr/bin/docker logs <?=$ct['Name'];?>','Log for <?=$ct['Name'];?>', false, false)"><?=$ct['Status'];?></a></td>

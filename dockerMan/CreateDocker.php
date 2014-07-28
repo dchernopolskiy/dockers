@@ -6,11 +6,11 @@ $allXmlDir = array(
 	 'built_in' => $relPath."/templates",
 	 );
 
-function debugLog($var){
-	echo "<pre>";
-	print_r(htmlentities($var));
-	echo "</pre>";
-}
+// function debugLog($var){
+// 	echo "<pre>";
+// 	print_r(htmlentities($var));
+// 	echo "</pre>";
+// }
 
 function getTemplates(){
 	global $allXmlDir;
@@ -45,6 +45,19 @@ function prepareDir($dir){
 			sleep(1);
 		}
 	}
+}
+
+function ContainerExist($container){
+	include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
+	$docker = new DockerClient();
+	$all_containers = $docker->getDockerContainers();
+	foreach ($all_containers as $ct) {
+		if ($ct['Name'] == $container){
+			return True;
+			break;
+		}
+	}
+	return False;
 }
 
 function xmlToCommand($xmlFile){
@@ -176,6 +189,10 @@ if ($_POST){
     if(strlen($Name)) {
     	$filename = sprintf('%s/my-%s.xml', $xmlUserDir, $Name);
     	file_put_contents($filename, $postXML);
+    }
+    // Remove existing container
+    if (ContainerExist($Name)){
+    	$cmd = "/usr/bin/docker rm -f $Name;" . $cmd;
     }
     // Injecting the command in $_GET variable and loading the exec file.
     $_GET['cmd'] = $cmd;
