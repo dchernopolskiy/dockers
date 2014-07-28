@@ -272,7 +272,8 @@ function execAddContainer(container, desc, reload) {
     }
   });
 }
-function addDocker(container=None) {
+function addDocker(container) {
+  container = (typeof container === "undefined") ? false : container;
   reload=true;
   if (container) {
     var title = 'Edit container: ' + container;
