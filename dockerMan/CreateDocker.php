@@ -410,7 +410,7 @@ if ($_POST){
 <div id="canvas" class="canvas" style="z-index:1;">
 
 	<div id="title">
-		<span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Preferences:</span>
+		<span class="left"><img src="/plugins/webGui/icons/default.png" class="icon" width="16" height="16">Preferences:</span>
 	</div>
 
 	<form method="post">
@@ -488,7 +488,7 @@ if ($_POST){
 		</table>
 
 		<div id="title">
-			<span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Paths</span>
+			<span class="left"><img src="/plugins/webGui/icons/disksettings.png" class="icon" width="16" height="16">Paths</span>
 		</div>
 
 		<table id="pathRows" class="pathTab">
@@ -524,7 +524,7 @@ if ($_POST){
 		</table>
 		<div id="titlePort">
 			<div id="title">
-				<span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Ports</span>
+				<span class="left"><img src="/plugins/webGui/icons/network.png" class="icon" width="16" height="16">Ports</span>
 			</div>
 
 			<table id="portRows" class="portRows">
