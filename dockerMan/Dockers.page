@@ -6,7 +6,6 @@ Title="Docker"
 <link type="text/css" rel="stylesheet" href="/plugins/dockerMan/jquery-ui/jquery-ui.min.css">
 <link type="text/css" rel="stylesheet" href="/plugins/dockerMan/jquery-ui/jquery-ui.structure.min.css">
 <link rel="stylesheet" type="text/css" href="/plugins/dockerMan/jquery-ui/jquery-ui.theme.min.css">
-
 <script type="text/javascript" src="/plugins/vendor/tablesorter/jquery.tablesorter.min.js"></script>
 <script type="text/javascript" src="/plugins/dockerMan/jquery-ui/jquery-ui.min.js"></script>
 
@@ -163,9 +162,9 @@ Docker Install Location:
 </style>
 <script type="text/javascript" charset="utf-8">
 function rmContainer(container, image){
-  $('#dialog-confirm').prop('title', 'Removing the container: ' + container);
-  $('#dialog-confirm').html('<p>Are you sure?</p>');
+  $( "#dialog-confirm" ).html('<p>Are you sure?</p>');
   $( "#dialog-confirm" ).dialog({
+    title: 'Removing the container: ' + container,
     resizable: false,
     width: 500,
     height:150,
@@ -188,10 +187,11 @@ function rmContainer(container, image){
   });
 }
 
-function rmImage(image){
-  $('#dialog-confirm').prop('title', 'Removing the image: ' + image);
-  $('#dialog-confirm').html('Are you sure?');
+function rmImage(image, imageName){
+  $( "#dialog-confirm" ).html( "Are you sure?" );
   $( "#dialog-confirm" ).dialog({
+    title: "Removing the image: " + imageName,
+    dialogClass: "alert",
     resizable: false,
     width: 500,
     height:150,
@@ -210,9 +210,9 @@ function rmImage(image){
 }
 
 function updateContainer(container){
-  $('#dialog-confirm').prop('title', 'Updating the container: ' + container);
   $('#dialog-confirm').html('<p>Are you sure?</p>');
   $( "#dialog-confirm" ).dialog({
+    title: 'Updating the container: ' + container,
     resizable: false,
     width: 500,
     height:150,
@@ -369,7 +369,7 @@ function addDocker(container) {
       <td><?=htmlentities($image['Id']);?></td>
       <td><?=htmlentities($image['Created']);?></td>
       <td><?=htmlentities($image['VirtualSize']);?></td>
-      <td><a class="exec" onclick="rmImage('<?=htmlentities($image['Id']);?>');">Remove</a></td>
+      <td><a class="exec" onclick="rmImage('<?=htmlentities($image['Id']);?>','<?=htmlentities($image['Tags'][0]);?>'); return true;">Remove</a></td>
     </tr>
     <?};?>
   </tbody>

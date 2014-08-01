@@ -39,7 +39,7 @@ function getTemplates(){
 function prepareDir($dir){
 	if (strlen($dir)){
 		if (!is_dir($dir)){
-			mkdir($dir, 0770, true);
+			mkdir($dir, 0777, true);
 			chown($dir, 'nobody');
 			chgrp($dir, 'users');
 			sleep(1);
@@ -138,6 +138,7 @@ function postToXML($post, $setOwnership = FALSE){
 	$Mode->appendChild($doc->createTextNode(strtolower($post["NetworkType"])));
 
     for ($i = 0; $i < count($post["hostPort"]); $i++){
+    	if (! strlen($post["containerPort"][$i])) { continue;}
     	$protocol = $post["portProtocol"][$i];
     	$Port = $Publish->appendChild($doc->createElement('Port'));
     	$HostPort = $Port->appendChild($doc->createElement('HostPort'));
@@ -149,6 +150,7 @@ function postToXML($post, $setOwnership = FALSE){
     };
 
     for ($i = 0; $i < count($post["VariableName"]); $i++){
+    	if (! strlen($post["VariableName"][$i])) { continue;}
     	$Variable = $Environment->appendChild($doc->createElement('Variable'));
     	$n = $Variable->appendChild($doc->createElement('Name'));
     	$n->appendChild($doc->createTextNode(addslashes(trim($post["VariableName"][$i]))));
@@ -157,7 +159,8 @@ function postToXML($post, $setOwnership = FALSE){
     }
 
     for ($i = 0; $i < count($post["hostPath"]); $i++){
-    	if (! strlen($post["containerPath"][$i])){continue; }
+    	if (! strlen($post["hostPath"][$i])) {continue; }
+    	if (! strlen($post["containerPath"][$i])) {continue; }
     	$tmpMode = $post["hostWritable"][$i];
     	if ($setOwnership){
     		prepareDir($post["hostPath"][$i]);
