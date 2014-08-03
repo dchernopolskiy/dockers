@@ -346,9 +346,7 @@ class DockerClient {
 		$containers = array();
 		$json = $this->getDockerJSON("/containers/json?all=1");
 
-		if (! $json){
-			return NULL;
-		}
+		if (! $json){ return NULL; }
 
 		foreach($json as $obj){
 			$c = array();
@@ -386,9 +384,7 @@ class DockerClient {
 		$c = array();
 		$json = $this->getDockerJSON("/images/json?all=0");
 
-		if (! $json){
-			return NULL;
-		}
+		if (! $json){ return NULL; }
 
 		foreach($json as $obj){
 			$c = array();

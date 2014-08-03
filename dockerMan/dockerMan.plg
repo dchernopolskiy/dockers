@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dockerMan">
 <!ENTITY author    "gfjardim">
-<!ENTITY version   "2014.08.03-1">
+<!ENTITY version   "2014.08.03-2">
 <!ENTITY category  "Core Functionality">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/gfjardim/dockers/dockerMan/dockerMan/dockerMan.plg">
 ]>
@@ -41,7 +41,7 @@ include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 
 $DockerUpdate = new DockerUpdate();
 if ( $argv[1] == "-d"){
-  exec("/usr/local/sbin/DockerUpdate.php > /dev/null 2>&1 &");
+  exec("/usr/local/sbin/DockerUpdate.php >/dev/null 2>&1 &");
 } else {
   while ( TRUE ) {
     echo "Reloading status.";
@@ -57,7 +57,7 @@ if ( $argv[1] == "-d"){
 <FILE Name="/tmp/update-run" Run="/bin/bash">
 <INLINE>
 <![CDATA[
-/usr/local/sbin/DockerUpdate.php -d
+/usr/local/sbin/DockerUpdate.php -d >/dev/null 2>&1 &
 rm /tmp/update-run
 ]]>
 </INLINE>
