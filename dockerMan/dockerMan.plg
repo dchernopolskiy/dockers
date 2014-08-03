@@ -34,7 +34,6 @@ rm -f /tmp/docker-cleanup
 <FILE Name="/usr/local/sbin/DockerUpdate.php" Mode="0770">
 <INLINE>
 <![CDATA[
-#!/usr/bin/php
 <?
 include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 
@@ -45,7 +44,6 @@ while ( TRUE ) {
   $DockerUpdate->reloadUpdateStatus();
   sleep(60);
 }
-
 ?>
 ]]>
 </INLINE>
@@ -54,7 +52,7 @@ while ( TRUE ) {
 <FILE Name="/tmp/update-run" Run="/bin/bash">
 <INLINE>
 <![CDATA[
-/usr/local/sbin/DockerUpdate.php &
+php /usr/local/sbin/DockerUpdate.php &
 rm /tmp/update-run
 ]]>
 </INLINE>
