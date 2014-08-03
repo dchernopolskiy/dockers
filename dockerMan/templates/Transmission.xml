@@ -7,9 +7,8 @@
     [b]/config[/b] : in this path, Transmission will store it's configuration files.[br]
     [b]/downloads[/b] : in this path Transmission will store the downloaded files.
   </Description>
-  <Registry>
-  	https://registry.hub.docker.com/u/gfjardim/transmission/
-  </Registry>
+  <Registry>https://registry.hub.docker.com/u/gfjardim/transmission/</Registry>
+  <GitHub>https://github.com/gfjardim/docker-transmission</GitHub>
   <Repository>gfjardim/transmission</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>

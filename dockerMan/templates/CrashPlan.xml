@@ -8,6 +8,7 @@
     [b]/data[/b] : normally this should point to '/mnt/user', but you can set this to any directory you wish to backup. You may add another paths too.
   </Description>
   <Registry>https://registry.hub.docker.com/u/gfjardim/crashplan/</Registry>
+  <GitHub>https://github.com/gfjardim/docker-crashplan</GitHub>
   <Repository>gfjardim/crashplan</Repository>
   <BindTime>true</BindTime>
   <Privileged>true</Privileged>

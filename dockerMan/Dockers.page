@@ -63,6 +63,7 @@ if ($_POST){
 // Add the Docker JSON client
 include("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 $docker = new DockerClient();
+$DockerUpdate = new DockerUpdate();
 
 // Grab the server IP address on br0 or eth0 interfaces.
 function serverIP(){
@@ -348,7 +349,18 @@ function addDocker(container) {
       <td><?=$ct['Id'];?></td>
       <?  ?>
       <td><input type="checkbox"  onclick="autoStart('<?=$ct['Name'];?>'); return true;" <?=$autostart;?>></td>
-      <td><a class="exec" onclick="updateContainer('<?=$ct["Name"];?>');">Update</a></td>
+      <td>
+        <? $updateStatus = $DockerUpdate->updateStatus($ct['Name']);
+            if ($updateStatus == "FALSE"){
+              $updateTxt = "<span style=\"color:#52D017;font-weight:bold;\">Update</span>";
+            } else if ($updateStatus == "TRUE"){
+              $updateTxt = "<span>Updated</span>";
+            } else {
+              $updateTxt = "<span style=\"color:#FF2400;\">N/A</span>";
+            }
+            printf("<a class=\"exec\" onclick=\"updateContainer('%s');\">%s</a>", $ct["Name"], $updateTxt);
+        ?>
+      </td>
       <td><a class="exec" onclick="rmContainer('<?=$ct["Name"];?>','<?=$ct["Image"];?>');">Remove</a></td>
     </tr>
     <?};?>

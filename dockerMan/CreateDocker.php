@@ -1,44 +1,12 @@
 <?
-$relPath = '/usr/local/emhttp/plugins/dockerMan';
+include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 
-$allXmlDir = array(
-	 'user' => '/boot/config/plugins/Docker', 
-	 'built_in' => $relPath."/templates",
-	 );
-
-// function debugLog($var){
-// 	echo "<pre>";
-// 	print_r(htmlentities($var));
-// 	echo "</pre>";
-// }
-
-function getTemplates(){
-	global $allXmlDir;
-	$out = array();
-	foreach ($allXmlDir as $key => $dir) {
-		$Files = scandir($dir);
-		natcasesort($Files);
-		if( count($Files) > 2 ) { 
-			foreach( $Files as $file ) {
-				if( $file != '.' && $file != '..') {
-					$ext = new SplFileInfo($file);
-					$ext = $ext->getExtension(); 
-					if($ext == "xml"){
-						$out[] = array('type' => $key,
-							'path' => $dir.'/'.$file,
-							'name' => preg_replace("/\.{$ext}/", '', $file),
-							);
-					}
-				}
-			}
-		}
-	}
-	return $out;
-}
+$DockerCommon = new DockerCommon();
+$DockerUpdate = new DockerUpdate();
 
 function prepareDir($dir){
 	if (strlen($dir)){
-		if (!is_dir($dir)){
+		if ( ! is_dir($dir) && ! is_file($dir)){
 			mkdir($dir, 0777, true);
 			chown($dir, 'nobody');
 			chgrp($dir, 'users');
@@ -48,7 +16,7 @@ function prepareDir($dir){
 }
 
 function ContainerExist($container){
-	include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
+
 	$docker = new DockerClient();
 	$all_containers = $docker->getDockerContainers();
 	foreach ($all_containers as $ct) {
@@ -127,6 +95,7 @@ function postToXML($post, $setOwnership = FALSE){
 	$Environment   = $root->appendChild($doc->createElement('Environment'));
 	$docNetworking = $root->appendChild($doc->createElement('Networking'));
 	$Data          = $root->appendChild($doc->createElement('Data'));
+	$Version       = $root->appendChild($doc->createElement('Version'));
 	$Mode          = $docNetworking->appendChild($doc->createElement('Mode'));
 	$Publish       = $docNetworking->appendChild($doc->createElement('Publish'));
 	$Name          = preg_replace('/\s+/', '', $post["containerName"]);
@@ -139,11 +108,11 @@ function postToXML($post, $setOwnership = FALSE){
 
     for ($i = 0; $i < count($post["hostPort"]); $i++){
     	if (! strlen($post["containerPort"][$i])) { continue;}
-    	$protocol = $post["portProtocol"][$i];
-    	$Port = $Publish->appendChild($doc->createElement('Port'));
-    	$HostPort = $Port->appendChild($doc->createElement('HostPort'));
-     	$ContainerPort = $Port->appendChild($doc->createElement('ContainerPort'));
-     	$Protocol = $Port->appendChild($doc->createElement('Protocol'));
+		$protocol      = $post["portProtocol"][$i];
+		$Port          = $Publish->appendChild($doc->createElement('Port'));
+		$HostPort      = $Port->appendChild($doc->createElement('HostPort'));
+		$ContainerPort = $Port->appendChild($doc->createElement('ContainerPort'));
+		$Protocol      = $Port->appendChild($doc->createElement('Protocol'));
      	$HostPort->appendChild($doc->createTextNode(trim($post["hostPort"][$i])));
      	$ContainerPort->appendChild($doc->createTextNode($post["containerPort"][$i]));
      	$Protocol->appendChild($doc->createTextNode($protocol));
@@ -151,11 +120,11 @@ function postToXML($post, $setOwnership = FALSE){
 
     for ($i = 0; $i < count($post["VariableName"]); $i++){
     	if (! strlen($post["VariableName"][$i])) { continue;}
-    	$Variable = $Environment->appendChild($doc->createElement('Variable'));
-    	$n = $Variable->appendChild($doc->createElement('Name'));
-    	$n->appendChild($doc->createTextNode(addslashes(trim($post["VariableName"][$i]))));
-    	$v = $Variable->appendChild($doc->createElement('Value'));
-    	$v->appendChild($doc->createTextNode(addslashes(trim($post["VariableValue"][$i]))));
+		$Variable      = $Environment->appendChild($doc->createElement('Variable'));
+		$VariableName  = $Variable->appendChild($doc->createElement('Name'));
+		$VariableValue = $Variable->appendChild($doc->createElement('Value'));
+    	$VariableName->appendChild($doc->createTextNode(addslashes(trim($post["VariableName"][$i]))));
+    	$VariableValue->appendChild($doc->createTextNode(addslashes(trim($post["VariableValue"][$i]))));
     }
 
     for ($i = 0; $i < count($post["hostPath"]); $i++){
@@ -165,14 +134,19 @@ function postToXML($post, $setOwnership = FALSE){
     	if ($setOwnership){
     		prepareDir($post["hostPath"][$i]);
     	}
-    	$Volume = $Data->appendChild($doc->createElement('Volume'));
-    	$HostDir = $Volume->appendChild($doc->createElement('HostDir'));
-    	$HostDir->appendChild($doc->createTextNode(addslashes($post["hostPath"][$i])));
-    	$ContainerDir = $Volume->appendChild($doc->createElement('ContainerDir'));
-    	$ContainerDir->appendChild($doc->createTextNode(addslashes($post["containerPath"][$i])));
-    	$DirMode = $Volume->appendChild($doc->createElement('Mode'));
-    	$DirMode->appendChild($doc->createTextNode($tmpMode));
+		$Volume       = $Data->appendChild($doc->createElement('Volume'));
+		$HostDir      = $Volume->appendChild($doc->createElement('HostDir'));
+		$ContainerDir = $Volume->appendChild($doc->createElement('ContainerDir'));
+		$DirMode      = $Volume->appendChild($doc->createElement('Mode'));
+		$HostDir->appendChild($doc->createTextNode(addslashes($post["hostPath"][$i])));
+		$ContainerDir->appendChild($doc->createTextNode(addslashes($post["containerPath"][$i])));
+		$DirMode->appendChild($doc->createTextNode($tmpMode));
     }
+
+    $DockerUpdate = new DockerUpdate();
+    $currentVersion = $DockerUpdate->getRemoteHASH($post["Repository"]);
+    $Version->appendChild($doc->createTextNode($currentVersion));
+    
     return $doc->saveXML();
 }
 
@@ -202,20 +176,51 @@ if ($_POST){
     // echo $cmd; 
     include($relPath . "/execWithLog.php");
 
+
 } else if ($_GET['updateContainer']){
 	$Container = urldecode($_GET['updateContainer']);
 	$isUpdatable = false;
-	foreach (getTemplates() as $value) {
+	$getTemplates = new DockerCommon();
+	foreach ($getTemplates->getTemplates() as $value) {
 		if ($value['type'] == 'user'){
-			$doc = new DOMDocument();
-			$doc->load($value['path']);
+
+			$doc = new DOMDocument('1.0', 'utf-8');
+			$doc->preserveWhiteSpace = false;
+			$doc->load( $value['path'] );
+			$doc->formatOutput = TRUE;
+
 			$Name = $doc->getElementsByTagName( "Name" )->item(0)->nodeValue;
+			$Repository = $doc->getElementsByTagName( "Repository" )->item(0)->nodeValue;
+
 			if ($Name == $Container) {
+
+				$DockerUpdate     = new DockerUpdate();
+				$CurrentVersion = $DockerUpdate->getRemoteHASH($Repository);
+
+				if ($CurrentVersion){
+					if ( $doc->getElementsByTagName( "Version" )->length == 0 ) {
+						$root    = $doc->getElementsByTagName( "Container" )->item(0);
+						$Version = $root->appendChild($doc->createElement('Version'));
+					} else {
+						$Version = $doc->getElementsByTagName( "Version" )->item(0);
+					}
+					$Version->nodeValue = $CurrentVersion;	
+
+					$xmlUserDir = $allXmlDir['user'];
+					$filename = sprintf('%s/my-%s.xml', $xmlUserDir, $Name);
+					file_put_contents($filename, $doc->saveXML());
+				}
+
 				list($cmd, $Name, $Repository) = xmlToCommand($doc->saveXML());
 				$cmd = sprintf("/usr/bin/docker rm -f %s; /usr/bin/docker pull %s; %s", $Name, $Repository, $cmd);
 				$isUpdatable = true;
 				$_GET['cmd'] = $cmd;
 				include($relPath . "/execWithLog.php");
+				$ct = array(
+					'Name' => $Name, 
+					'Image' => $Repository
+					);
+				$DockerUpdate->reloadUpdateStatus($ct);
 				break;
 			}
 		}
@@ -425,7 +430,8 @@ if ($_POST){
 						<option value="" selected>Select a template</option>
 						<? 
 						$rmadd = '';
-						foreach (getTemplates() as $value) { 
+						$getTemplates = new DockerCommon();
+						foreach ($getTemplates->getTemplates() as $value) { 
 							$selected = (isset($xmlTemplate) && $value['path'] == $xmlTemplate) ? ' selected ' : '';
 							if (strlen($selected) && $value['type'] == 'user' ){ $rmadd = $value['path']; }
 							echo "\t\t\t\t\t\t<option value=\"" . $value['type'] . ":" . $value['path'] . "\" {$selected} >" . $value['name'] . "</option>\n";

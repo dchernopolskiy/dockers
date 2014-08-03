@@ -7,9 +7,8 @@
     [b]/plexWatch[/b] : in this path, plexWatch will store it's configuration files.[br]
     [b]/logs[/b] : in this path plexWatch will store it's logs.
   </Description>
-  <Registry>
-    https://registry.hub.docker.com/u/needo/plexwatch/
-  </Registry>
+  <Registry>https://registry.hub.docker.com/u/needo/plexwatch/</Registry>
+  <GitHub>https://github.com/needo37/plexWatch</GitHub>
   <Repository>needo/plexwatch</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>
@@ -37,7 +36,7 @@
   <Data>
     <Volume>
       <HostDir>/mnt/user/appdata/plexWatch/logs</HostDir>
-      <ContainerDir>/logs</ContainerDir>
+      <ContainerDir>/log</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
     <Volume>

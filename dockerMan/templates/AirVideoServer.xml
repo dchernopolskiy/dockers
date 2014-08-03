@@ -10,6 +10,7 @@
     [b]/movies[/b] : set this path to where you wish to find your movies in AirVideo.
   </Description>
   <Registry>https://registry.hub.docker.com/u/eroz/airvideo/</Registry>
+  <GitHub>https://github.com/rsanch1/airvideo</GitHub>
   <Repository>eroz/airvideo</Repository>
   <BindTime>true</BindTime>
   <Privileged>true</Privileged>

@@ -7,9 +7,8 @@
     [b]/mnt/user/appdata/XBMCServer[/b] : in this path, XBMC wil look for it's userdata. Please refer to the container Home Page to further instructions.[br][br]
     [b][span style='color: #E80000;']Warning:[/span][/b] This package is NOT SUPPORTED by our community.
   </Description>
-  <Registry>
-    https://registry.hub.docker.com/u/wernerb/docker-xbmc-server/
-  </Registry>
+  <Registry>https://registry.hub.docker.com/u/wernerb/docker-xbmc-server/</Registry>
+  <GitHub>https://github.com/wernerb/docker-xbmc-server/tree/gotham</GitHub>
   <Repository>wernerb/docker-xbmc-server:gotham</Repository>
   <BindTime>true</BindTime>
   <Privileged>true</Privileged>

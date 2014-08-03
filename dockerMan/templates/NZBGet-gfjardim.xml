@@ -8,9 +8,9 @@
     [b]/downloads[/b] : in this path, NZBget will store the downloaded files.[br][br]
     [b]Tip:[/b] The default username is nzbget and the default password is tegbzn6789.
   </Description>
-  <Registry>https://registry.hub.docker.com/u/needo/nzbget/</Registry>
-  <GitHub>https://github.com/needo37/nzbget</GitHub>
-  <Repository>needo/nzbget</Repository>
+  <Registry>https://registry.hub.docker.com/u/gfjardim/nzbget/</Registry>
+  <GitHub>https://github.com/gfjardim/nzbget</GitHub>
+  <Repository>gfjardim/nzbget</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>
   <Networking>

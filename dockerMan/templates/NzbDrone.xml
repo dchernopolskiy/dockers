@@ -8,9 +8,8 @@
     [b]/downloads[/b] : this path is used retrieve the downloaded files by your downloader application (e.g. SABnzbd or NZBGet)[br]
     [b]/tv[/b] : set this path to where you wish NzbDrone move your TV episodes to.
   </Description>
-  <Registry>
-    https://registry.hub.docker.com/u/needo/nzbdrone/
-  </Registry>
+  <Registry>https://registry.hub.docker.com/u/needo/nzbdrone/</Registry>
+  <GitHub>https://github.com/needo37/nzbdrone</GitHub>
   <Repository>needo/nzbdrone</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>

@@ -8,6 +8,7 @@
     [b]/downloads[/b] : in this path, SABnzbd stores the downloaded files.
   </Description>
   <Registry>https://registry.hub.docker.com/u/needo/sabnzbd/</Registry>
+  <GitHub>https://github.com/needo37/sabnzbd</GitHub>
   <Repository>needo/sabnzbd</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>

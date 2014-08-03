@@ -8,6 +8,7 @@
     [b]Tip:[/b] You can add more volume mappings if you wish PMS has access to it.
   </Description>
   <Registry>https://registry.hub.docker.com/u/needo/plex/</Registry>
+  <GitHub>https://github.com/needo37/plex</GitHub>
   <Repository>needo/plex</Repository>
   <BindTime>true</BindTime>
   <Privileged>true</Privileged>

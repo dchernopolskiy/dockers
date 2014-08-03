@@ -10,6 +10,7 @@
     [b]Tip:[/b] Set EDGE variable to '1' if you want to always run the last version.
   </Description>
   <Registry>https://registry.hub.docker.com/u/needo/sickrage/</Registry>
+  <GitHub>https://github.com/needo37/sickrage</GitHub>
   <Repository>needo/sickrage</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>

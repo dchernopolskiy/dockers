@@ -8,6 +8,7 @@
     [b]Tip:[/b] Set EDGE variable to '1' if you want to always run the last version.
   </Description>
   <Registry>https://registry.hub.docker.com/u/gfjardim/owncloud/</Registry>
+  <GitHub>https://github.com/gfjardim/docker-owncloud</GitHub>
   <Repository>gfjardim/owncloud</Repository>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>
