@@ -179,7 +179,7 @@ class DockerUpdate{
 		if(! $Container){
 			$DockerClient = new DockerClient();
 			$Containers = $DockerClient->getDockerContainers();
-			
+			if (! $Containers){ return NULL;}
 		} else {
 			$Containers = array($Container);
 		}
@@ -275,6 +275,11 @@ class DockerClient {
 
 	private function getDockerJSON($url){
 		$fp = stream_socket_client('unix:///var/run/docker.sock', $errno, $errstr);
+
+		if ($fp === false) {
+			echo "Couldn't create socket: [$errno] $errstr";
+			return NULL;
+		}
 		$out="GET {$url} HTTP/1.1\r\nConnection: Close\r\n\r\n";
 		fwrite($fp, $out);
 		while (!feof($fp)) {
@@ -341,6 +346,10 @@ class DockerClient {
 		$containers = array();
 		$json = $this->getDockerJSON("/containers/json?all=1");
 
+		if (! $json){
+			return NULL;
+		}
+
 		foreach($json as $obj){
 			$c = array();
 			$details = $this->getContainerDetails($obj['Id']);
@@ -376,6 +385,10 @@ class DockerClient {
 		$images = array();
 		$c = array();
 		$json = $this->getDockerJSON("/images/json?all=0");
+
+		if (! $json){
+			return NULL;
+		}
 
 		foreach($json as $obj){
 			$c = array();

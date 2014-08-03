@@ -82,6 +82,7 @@ function xmlToCommand($xmlFile){
 }
 
 function postToXML($post, $setOwnership = FALSE){
+	global $DockerUpdate;
 	$doc = new DOMDocument('1.0', 'utf-8');
 	$doc->preserveWhiteSpace = false;
     $doc->formatOutput = true;
@@ -143,7 +144,6 @@ function postToXML($post, $setOwnership = FALSE){
 		$DirMode->appendChild($doc->createTextNode($tmpMode));
     }
 
-    $DockerUpdate = new DockerUpdate();
     $currentVersion = $DockerUpdate->getRemoteHASH($post["Repository"]);
     $Version->appendChild($doc->createTextNode($currentVersion));
     
@@ -175,6 +175,11 @@ if ($_POST){
     $_GET['cmd'] = $cmd;
     // echo $cmd; 
     include($relPath . "/execWithLog.php");
+    $ct = array(
+    	'Name' => $Name, 
+    	'Image' => $Repository
+    	);
+    $DockerUpdate->reloadUpdateStatus($ct);
 
 
 } else if ($_GET['updateContainer']){
