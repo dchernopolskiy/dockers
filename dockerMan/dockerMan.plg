@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dockerMan">
 <!ENTITY author    "gfjardim">
-<!ENTITY version   "2014.08.03-6">
+<!ENTITY version   "2014.08.03-7">
 <!ENTITY category  "Core Functionality">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/gfjardim/dockers/dockerMan/dockerMan/dockerMan.plg">
 ]>
@@ -63,16 +63,13 @@ rm -f /tmp/docker-cleanup
 <?
 include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 
+# update the plugin
+echo "Updating the plugin";
+
+
 $DockerUpdate = new DockerUpdate();
-if ( $argv[1] == "-d"){
-  exec("/usr/local/sbin/DockerUpdate.php -i >/dev/null 2>&1 &");
-} else if ( $argv[1] == "-i"){
-  while ( TRUE ) {
-    echo "Reloading status.";
-    $DockerUpdate->reloadUpdateStatus();
-    sleep(1800);
-  }
-} else {
+
+if ( $argv[1] == "-i"){
   echo " Reloading status. ";
   while ( TRUE ){
     $status = $DockerUpdate->reloadUpdateStatus();
@@ -82,7 +79,27 @@ if ( $argv[1] == "-d"){
       sleep(15);
     }
   }
-  echo "Done.\n";
+  echo "Done.";
+
+} else if ( $argv[1] == "-d"){
+  while ( TRUE ) {
+    echo "Reloading status.";
+    $DockerUpdate->reloadUpdateStatus();
+    sleep(1800);
+  }
+
+} else {
+  shell_exec("/usr/local/sbin/installplg /var/log/plugins/dockerMan >/dev/null 2>$1");
+  echo " Reloading status. ";
+  while ( TRUE ){
+    $status = $DockerUpdate->reloadUpdateStatus();
+    if ( $status ) {
+      break;
+    } else {
+      sleep(15);
+    }
+  }
+  echo "Done.";
 }
 ?>
 ]]>
@@ -93,7 +110,7 @@ if ( $argv[1] == "-d"){
 <INLINE>
 <![CDATA[
 kill -9 $(pgrep DockerUpdate)
-/usr/local/sbin/DockerUpdate.php >/dev/null 2>&1 &
+/usr/local/sbin/DockerUpdate.php -i >/dev/null 2>&1 &
 rm /tmp/update-run
 ]]>
 </INLINE>
