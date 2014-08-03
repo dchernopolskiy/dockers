@@ -46,7 +46,7 @@ if ( $argv[1] == "-d"){
   while ( TRUE ) {
     echo "Reloading status.";
     $DockerUpdate->reloadUpdateStatus();
-    sleep(60);
+    sleep(900);
   }
 }
 ?>
