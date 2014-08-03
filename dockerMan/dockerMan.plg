@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dockerMan">
 <!ENTITY author    "gfjardim">
-<!ENTITY version   "2014.08.03-4">
+<!ENTITY version   "2014.08.03-5">
 <!ENTITY category  "Core Functionality">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/gfjardim/dockers/dockerMan/dockerMan/dockerMan.plg">
 ]>
@@ -13,6 +13,30 @@
          version="&version;"
          category="&category;"
          pluginURL="&pluginURL;">
+
+<!--
+wait 30 seconds until newwork becomes available
+-->
+<FILE Name="/tmp/plugin-prepare" Run="/bin/bash">
+<INLINE>
+# Wait until network is ready
+timer=30
+while [ $timer -gt 0 ]; do
+  gateway=$(route -n | awk '/^0.0.0.0/ {print $2}')
+  if [ -n "$gateway" ] &amp;&amp; [ $(ping -q -n -c 1 $gateway | awk -F, '/received/ {print $2}' | awk '{print $1}') -eq 1 ]; then
+    break
+  fi
+  timer=$((timer-1))
+  sleep 1
+done
+if [ $timer -eq 0 ]; then
+  echo "No network communication !!!"
+fi
+# Remove this script
+rm -f /tmp/plugin-prepare
+</INLINE>
+</FILE>
+
 <!--
 get from github as tarball
 -->
