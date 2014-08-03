@@ -195,7 +195,7 @@ class DockerUpdate{
 			} else {
 				continue;
 			}
-			if ($LocalVersion) {
+			if ($LocalVersion && $RemoteVersion) {
 				if ($RemoteVersion == $LocalVersion){
 					$update = "TRUE";
 				} else {
@@ -208,6 +208,7 @@ class DockerUpdate{
 			// printf("Name[%s], Image[%s], Local[%s], Remote[%s], Update[%s]\n", $Name, $Repository, $LocalVersion, $RemoteVersion, $update);
 		}
 		file_put_contents($this->updateFile, json_encode($Updates));
+		return TRUE;
 	}
 
 
@@ -219,15 +220,16 @@ class DockerUpdate{
 		$timeLapse = time() - $Updates["Created"];
 		unset($Updates["Created"]);
 
-		if ($timeLapse > 1800){
-			$this->reloadUpdateStatus();
-		}
+		// if ($timeLapse > 1800){
+		// 	$this->reloadUpdateStatus();
+		// }
 
 		foreach ($Updates as $key => $value) {
 			if ($Name == $key){
 				return $value;
 			}
 		}
+		return "UNDEF";
 	}
 
 }

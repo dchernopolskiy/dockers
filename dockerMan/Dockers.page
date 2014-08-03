@@ -245,6 +245,10 @@ function containerControl(container, action){
   document.getElementById("#cmdStartStop").value = "/usr/bin/docker " + action + " " + container;
   document.forms["formStartStop"].submit();
 };
+function reloadUpdate(){
+  document.getElementById("#cmdStartStop").value = "/usr/local/sbin/DockerUpdate.php";
+  document.forms["formStartStop"].submit();
+};
 function execWithLog(cmd, desc, ask, reload) {
   if (ask){
     r = confirm(desc+"\n\nAre you sure?");
@@ -305,7 +309,12 @@ function addDocker(container) {
   <input type="hidden" id="#cmdStartStop" name="command" value="" />
 </form>
 
-<div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Containers</span><div style="text-align:right;"><a class="exec" onclick="addDocker();"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a> </div></div>
+<div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Containers</span>
+  <div style="text-align:right;">
+    <a class="exec" onclick="reloadUpdate();"><img src="/plugins/dockerMan/reload.png" alt="plus" width="30px" height=""></a>&nbsp;&nbsp;
+    <a class="exec" onclick="addDocker();"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a>
+  </div>
+</div>
 <table class="tablesorter" id="docker_containers">
   <thead>
     <tr><th>CONTROL</th><th>NAME</th><th>IMAGE</th><th>CREATED</th><th>STATUS</th><th>PORTS</th><th>VOLUME MAPPINGS</th><th>CONTAINER ID</th><th>AUTOSTART</th><th>UPDATE</th><th>REMOVE</th></tr>
