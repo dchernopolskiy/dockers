@@ -311,8 +311,8 @@ function addDocker(container) {
 
 <div id="title"><span class="left"><img src="/plugins/dockerMan/dockerMan.png" class="icon" width="16" height="16">Docker Containers</span>
   <div style="text-align:right;">
-    <a class="exec" onclick="reloadUpdate();"><img src="/plugins/dockerMan/reload.png" alt="plus" width="30px" height=""></a>&nbsp;&nbsp;
-    <a class="exec" onclick="addDocker();"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a>
+    <a class="exec" onclick="reloadUpdate();" title="Verify Updates"><img src="/plugins/dockerMan/reload.png" alt="plus" width="30px" height=""></a>&nbsp;&nbsp;
+    <a class="exec" onclick="addDocker();" title="Add a container"><img src="/plugins/dockerMan/plus.png" alt="plus" width="30px" height=""></a>
   </div>
 </div>
 <table class="tablesorter" id="docker_containers">
@@ -351,7 +351,16 @@ function addDocker(container) {
       "<button style=\"color:#52D017;font-weight:bold;width: 4em;\" onclick=\"containerControl('".$ct['Name']."','start'); return true;\">Start</button>";
       ?></td>
       <td><a class="exec" onclick="addDocker('<?=$ct['Name'];?>');"><?=$ct['Name'];?></a></td>
-      <td><?=$ct['Image'];?></td>
+      <td>
+        <?
+        $Registry = $DockerUpdate->getTemplateRegistry($ct['Image']);
+        if ($Registry){
+          printf("<a href=\"%s\" target=\"_blank\">%s</a>", $Registry, $ct['Image'] );
+        } else {
+          echo $ct['Image'];
+        }
+        ?>
+      </td>
       <td><?=$ct['Created'];?></td>
       <td><a class="log" onclick="execWithLog('/usr/bin/docker logs <?=$ct['Name'];?>','Log for <?=$ct['Name'];?>', false, false)"><?=$ct['Status'];?></a></td>
       <td><?=implode("<br>", $ports);?></td>

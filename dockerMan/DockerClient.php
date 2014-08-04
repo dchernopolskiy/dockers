@@ -51,7 +51,7 @@ class DockerUpdate{
 
 
 	public function download_url($url){
-		return shell_exec("curl -s -k -L $url" );
+		return shell_exec("curl -s -k -L $url 2>/dev/null" );
 	}
 
 
@@ -378,6 +378,17 @@ class DockerClient {
 		$out = $this->postDockerJSON($in);
 		debugLog($out);
 
+	}
+
+	public function getImageID($Image){
+		$allImages = $this->getDockerImages();
+		foreach ($allImages as $img) {
+			preg_match("%" . preg_quote($Image, "%") ."%", $img["Tags"][0], $matches);
+			if( $matches){
+				return $img["Id"];
+			}
+		}
+		return NULL;
 	}
 
 	public function getDockerImages(){

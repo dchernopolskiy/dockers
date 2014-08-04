@@ -2,6 +2,7 @@
 include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 
 $DockerCommon = new DockerCommon();
+$DockerClient = new DockerClient();
 $DockerUpdate = new DockerUpdate();
 
 function prepareDir($dir){
@@ -16,9 +17,9 @@ function prepareDir($dir){
 }
 
 function ContainerExist($container){
+	global $DockerClient;
 
-	$docker = new DockerClient();
-	$all_containers = $docker->getDockerContainers();
+	$all_containers = $DockerClient->getDockerContainers();
 	if ( ! $all_containers) { return FALSE; }
 	foreach ($all_containers as $ct) {
 		if ($ct['Name'] == $container){
@@ -217,11 +218,20 @@ if ($_POST){
 					file_put_contents($filename, $doc->saveXML());
 				}
 
+				$oldContainerID = $DockerClient->getImageID($Repository);
 				list($cmd, $Name, $Repository) = xmlToCommand($doc->saveXML());
-				$cmd = sprintf("/usr/bin/docker rm -f %s; /usr/bin/docker pull %s; %s", $Name, $Repository, $cmd);
+				$cmd = sprintf("/usr/bin/docker rm -f %s; 
+					/usr/bin/docker pull %s; 
+					%s", $Name, $Repository, $cmd);
 				$isUpdatable = true;
 				$_GET['cmd'] = $cmd;
 				include($relPath . "/execWithLog.php");
+
+				$newContainerID = $DockerClient->getImageID($Repository);
+				if ($oldContainerID != $newContainerID){
+					$_GET['cmd'] = sprintf("/usr/bin/docker rmi %s", $oldContainerID);
+					include($relPath . "/execWithLog.php");
+				}
 				$ct = array(
 					'Name' => $Name, 
 					'Image' => $Repository
