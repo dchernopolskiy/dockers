@@ -19,6 +19,7 @@ function ContainerExist($container){
 
 	$docker = new DockerClient();
 	$all_containers = $docker->getDockerContainers();
+	if ( ! $all_containers) { return FALSE; }
 	foreach ($all_containers as $ct) {
 		if ($ct['Name'] == $container){
 			return True;

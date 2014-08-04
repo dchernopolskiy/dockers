@@ -155,7 +155,7 @@ Docker Install Location:
 
 <?PHP } ?>
 
-<? if (pgrep('docker')) { ?>
+<? if ( pgrep('docker')) { ?>
 <br>
 <style>
   a.log{cursor:zoom-in;}
@@ -321,6 +321,7 @@ function addDocker(container) {
   </thead>
   <tbody>
     <? $all_containers = $docker->getDockerContainers();
+      if ( ! $all_containers) { $all_containers = array(); }
       $IP = serverIP();
       foreach($all_containers as $ct){ 
         $autostart = is_autostart($ct['Name']) ? "checked" : "";
@@ -384,6 +385,7 @@ function addDocker(container) {
   </thead>
   <tbody>
     <? $all_images = $docker->getDockerImages();
+       if ( ! $all_images) { $all_images = array(); }
        foreach($all_images as $image){ ?>
     <tr>
       <td><?=implode("<br>",$image['Tags']);?></td>
