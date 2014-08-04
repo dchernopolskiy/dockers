@@ -63,10 +63,6 @@ rm -f /tmp/docker-cleanup
 <?
 include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 
-# update the plugin
-echo "Updating the plugin";
-
-
 $DockerUpdate = new DockerUpdate();
 
 if ( $argv[1] == "-i"){
@@ -89,7 +85,16 @@ if ( $argv[1] == "-i"){
   }
 
 } else {
-  shell_exec("/usr/local/sbin/installplg /var/log/plugins/dockerMan >/dev/null 2>$1");
+  $bin = "/usr/local/emhttp/plugins/plgMan/plugin";
+  $pluginFile = "/boot/config/plugins/dockerMan.plg";
+  if ( is_file($pluginFile) ){
+    $localVersion = shell_exec("$bin version $pluginFile");
+    $remoteVersion = shell_exec("$bin check dockerMan");
+    if ($localVersion != $remoteVersion){
+      echo "Updating plugin";
+      shell_exec("$bin update dockerMan >/dev/null 2>&1 &");
+    }
+  }
   echo " Reloading status. ";
   while ( TRUE ){
     $status = $DockerUpdate->reloadUpdateStatus();
