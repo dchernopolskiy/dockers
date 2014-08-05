@@ -228,7 +228,7 @@ if ($_POST){
 				include($relPath . "/execWithLog.php");
 
 				$newContainerID = $DockerClient->getImageID($Repository);
-				if ($oldContainerID != $newContainerID){
+				if ( $oldContainerID and $oldContainerID != $newContainerID){
 					$_GET['cmd'] = sprintf("/usr/bin/docker rmi %s", $oldContainerID);
 					include($relPath . "/execWithLog.php");
 				}
