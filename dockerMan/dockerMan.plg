@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dockerMan">
 <!ENTITY author    "gfjardim">
-<!ENTITY version   "2014.08.06">
+<!ENTITY version   "2014.08.06-1">
 <!ENTITY category  "Core Functionality">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/gfjardim/dockers/dockerMan/dockerMan/dockerMan.plg">
 ]>
@@ -65,11 +65,12 @@ include_once("/usr/local/emhttp/plugins/dockerMan/DockerClient.php");
 $DockerUpdate = new DockerUpdate();
 
 function updateStatus(){
+  global $DockerUpdate;
   echo "Reloading status.";
   while ( TRUE ){
     $status = $DockerUpdate->reloadUpdateStatus();
     if ( $status ) {
-      echo " Done."
+      echo " Done.";
       return TRUE;
     } else {
       sleep(15);
