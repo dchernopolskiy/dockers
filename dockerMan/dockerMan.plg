@@ -119,7 +119,7 @@ if ( $argv[1] == "-i"){
 <FILE Name="/tmp/update-run" Run="/bin/bash">
 <INLINE>
 <![CDATA[
-kill -9 $(pgrep DockerUpdate)
+#kill -9 $(pgrep DockerUpdate)
 /usr/local/sbin/DockerUpdate.php -i >/dev/null 2>&1 &
 rm /tmp/update-run
 ]]>
