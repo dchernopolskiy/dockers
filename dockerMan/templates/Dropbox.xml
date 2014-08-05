@@ -21,12 +21,12 @@
   <Data>
     <Volume>
       <HostDir>/mnt/user/appdata/dropbox/</HostDir>
-      <ContainerDir>/config</ContainerDir>
+      <ContainerDir>/home/.dropbox</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
     <Volume>
       <HostDir></HostDir>
-      <ContainerDir>/dropbox</ContainerDir>
+      <ContainerDir>/home/Dropbox</ContainerDir>
       <Mode>rw</Mode>
     </Volume>
   </Data>
