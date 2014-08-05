@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dockerMan">
 <!ENTITY author    "gfjardim">
-<!ENTITY version   "2014.08.06-1">
+<!ENTITY version   "2014.08.06-2">
 <!ENTITY category  "Core Functionality">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/gfjardim/dockers/dockerMan/dockerMan/dockerMan.plg">
 ]>
@@ -66,11 +66,11 @@ $DockerUpdate = new DockerUpdate();
 
 function updateStatus(){
   global $DockerUpdate;
-  echo "Reloading status.";
+  echo "Reloading status. ";
   while ( TRUE ){
     $status = $DockerUpdate->reloadUpdateStatus();
     if ( $status ) {
-      echo " Done.";
+      echo " Done.\n";
       return TRUE;
     } else {
       sleep(15);
@@ -95,7 +95,7 @@ function updatePlugin(){
     $localVersion = trim(shell_exec("$bin version $pluginFile"));
     $remoteVersion = trim(shell_exec("$bin check dockerMan"));
     if ($localVersion != $remoteVersion){
-      echo "Updating plugin";
+      echo "Updating plugin. ";
       shell_exec("$bin update dockerMan >/dev/null 2>&1 &");
     }
   }
